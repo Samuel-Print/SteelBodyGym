@@ -3,6 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { Icon } from '../common/Icons';
 import ThemeToggle from '../common/ThemeToggle';
 
+import logo from '../../../public/logoWeb.png';
+
 const AdminHeader = () => {
   const location = useLocation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -28,9 +30,11 @@ const AdminHeader = () => {
             to="/promotions"
             className="flex items-center gap-3 shrink-0"
           >
-            <div className="w-10 h-10 rounded-[12px] bg-[var(--accent)] flex items-center justify-center text-white">
-              <Icon name="dumbbell" className="w-5 h-5" />
-            </div>
+             <img 
+                src={logo} 
+                alt="Logo" 
+                className="w-[45px] h-[45px] "
+              />
 
             <h1 className="font-head font-bold text-[1.4rem] leading-none">
               <span className="text-[var(--text)]">Steel Body</span>{' '}

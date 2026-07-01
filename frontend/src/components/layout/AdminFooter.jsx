@@ -5,7 +5,7 @@ const AdminFooter = () => {
         <p className="text-sm text-[var(--muted)] font-medium">
           © {new Date().getFullYear()}{" "}
           <span className="font-semibold text-[var(--text)]">
-            Progran
+            ProGangster
           </span>
           . Todos los derechos reservados.
         </p>

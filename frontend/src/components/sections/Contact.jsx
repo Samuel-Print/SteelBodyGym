@@ -1,4 +1,46 @@
+import { useState } from 'react'; 
 import { Icon } from '../common/Icons';
+import { SEDES } from '../../data/data';
+
+const HorarioAccordion = ({ horario }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div>
+      <div
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 cursor-pointer hover:text-[var(--accent)] transition-colors"
+      >
+        <span className="text-[0.85rem] text-[var(--muted)]">
+          {horario.principal}
+        </span>
+        <Icon
+          name="chevron-down"
+          className={`w-4 h-4 transition-transform duration-300 flex-shrink-0 ${
+            isOpen ? 'rotate-180' : ''
+          }`}
+        />
+      </div>
+
+      <div
+        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+          isOpen ? 'max-h-96 mt-2' : 'max-h-0'
+        }`}
+      >
+        <div className="flex flex-col gap-1 pl-3 border-l-2 border-[var(--accent)]">
+          {horario.completo.slice(1).map((hora, i) => (
+            <span
+              key={i}
+              className="text-[0.82rem] text-[var(--muted)]"
+            >
+              {hora}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const Contact = () => {
   return (
@@ -33,7 +75,7 @@ const Contact = () => {
               </div>
               <div>
                 <strong>Dirección</strong>
-                <span className="block text-[var(--muted)] text-[0.9rem]">Consulta nuestras sedes más arriba</span>
+                <span className="block text-[var(--muted)] text-[0.9rem]">Cl. 37 #8 - 24, Dosquebradas, Risaralda</span>
               </div>
             </div>
 
@@ -43,7 +85,7 @@ const Contact = () => {
               </div>
               <div>
                 <strong>Teléfono</strong>
-                <span className="block text-[var(--muted)] text-[0.9rem]">+57 300 000 0000</span>
+                <span className="block text-[var(--muted)] text-[0.9rem]">+57 312 258 8668</span>
               </div>
             </div>
 
@@ -53,17 +95,20 @@ const Contact = () => {
               </div>
               <div>
                 <strong>Correo</strong>
-                <span className="block text-[var(--muted)] text-[0.9rem]">contacto@steelbodygym.com</span>
+                <span className="block text-[var(--muted)] text-[0.9rem]">steelbodygym2024@gmail.com</span>
               </div>
             </div>
 
-            <div className="flex gap-3.5 mb-5 items-center">
+            {/* Atención - ajustado para mejor alineación */}
+            <div className="flex gap-3.5 mb-5">
               <div className="w-[44px] h-[44px] rounded-[11px] bg-[var(--accent-soft)] text-[var(--accent)] grid place-items-center flex-shrink-0">
                 <Icon name="clock" className="w-5 h-5" />
               </div>
-              <div>
-                <strong>Atención</strong>
-                <span className="block text-[var(--muted)] text-[0.9rem]">Lun a Sáb · 5:00 a.m. – 10:00 p.m.</span>
+              <div className="flex-1">
+                <strong className="block mb-2">
+                  Atención
+                </strong>
+                <HorarioAccordion horario={SEDES[0].horario} />
               </div>
             </div>
 

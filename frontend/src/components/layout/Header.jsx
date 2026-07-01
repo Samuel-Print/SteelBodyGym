@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { Icon } from '../common/Icons';
 import ThemeToggle from '../common/ThemeToggle';
 
+import logo from '../../../public/logoWeb.png';
+
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -25,10 +27,12 @@ const Header = () => {
             to="/"
             className="flex items-center gap-[11px] font-extrabold text-[1.2rem] font-head shrink-0"
           >
-            <span className="w-[38px] h-[38px] rounded-[11px] bg-[var(--accent)] grid place-items-center text-white text-lg">
-              <Icon name="dumbbell" />
-            </span>
-            Steel Body <span className="text-[var(--accent)]">Gym</span>
+             <img 
+                src={logo} 
+                alt="Logo" 
+                className="w-[45px] h-[45px] "
+              />
+            <h2>Steel Body <span className="text-[var(--accent)]">Gym</span></h2>
           </Link>
 
           {/* Right Side */}
