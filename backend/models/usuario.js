@@ -28,6 +28,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING(255),
       allowNull: false
     },
+    telefono: {                        
+      type: DataTypes.STRING(20),
+      allowNull: true
+    },
     token_recuperacion: {
       type: DataTypes.STRING(255),
       allowNull: true
