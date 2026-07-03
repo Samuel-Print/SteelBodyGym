@@ -1,6 +1,9 @@
 'use strict';
 
 const UsuarioRepository = require('../repositories/usuario.repository');
+const EmailService = require('./email.service');
+const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const { hash: hashPassword } = require('../utils/bcrypt');
 const AppError = require('../utils/AppError');
 const constants = require('../config/constants');
@@ -75,6 +78,60 @@ const UsuarioService = {
     if (!result) throw new AppError(constants.MESSAGES.NOT_FOUND('Usuario'), constants.HTTP.NOT_FOUND);
     return { mensaje: constants.MESSAGES.REACTIVATED('Usuario'), usuario: result };
   },
+
+  solicitarRecuperacion: async (email) => {
+    // Buscar usuario
+    const usuario = await UsuarioRepository.findByEmail(email);
+    if (!usuario) {
+      throw new AppError('No existe una cuenta con este email', 404);
+    }
+
+    // Generar token
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiracion = new Date(Date.now() + 3600000); // 1 hora
+
+    // Guardar token
+    await UsuarioRepository.saveToken(email, token, expiracion);
+
+    // Enviar email
+    if (process.env.NODE_ENV === 'development') {
+      await EmailService.sendRecoveryEmailDev(email, token);
+    } else {
+      await EmailService.sendRecoveryEmail(email, token);
+    }
+
+    return { mensaje: 'Se ha enviado un enlace de recuperación a tu correo electrónico' };
+  },
+
+  verificarToken: async (token) => {
+    const usuario = await UsuarioRepository.findByToken(token);
+    if (!usuario) {
+      throw new AppError('Token inválido o expirado', 400);
+    }
+    return { mensaje: 'Token válido', email: usuario.email };
+  },
+
+  resetearPassword: async (token, nueva_password) => {
+    // Validar contraseña
+    if (!nueva_password || nueva_password.length < 6) {
+      throw new AppError('La contraseña debe tener al menos 6 caracteres', 400);
+    }
+
+    // Verificar token
+    const usuario = await UsuarioRepository.findByToken(token);
+    if (!usuario) {
+      throw new AppError('Token inválido o expirado', 400);
+    }
+
+    // Encriptar nueva contraseña
+    const salt = await bcrypt.genSalt(10);
+    const password_hash = await bcrypt.hash(nueva_password, salt);
+
+    // Actualizar contraseña y limpiar token
+    await UsuarioRepository.updatePassword(usuario.id_usuario, password_hash);
+
+    return { mensaje: 'Contraseña actualizada correctamente' };
+  }
 };
 
 module.exports = UsuarioService;

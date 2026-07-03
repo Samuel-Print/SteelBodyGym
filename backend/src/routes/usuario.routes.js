@@ -28,5 +28,8 @@ router.put(
 );
 router.delete('/:id', authenticate, authorize('Administrador'), UsuarioController.softDelete);
 router.put('/:id/reactivar', authenticate, authorize('Administrador'), UsuarioController.reactivate);
+router.post('/solicitar-recuperacion', UsuarioController.solicitarRecuperacion);
+router.get('/verificar-token/:token', UsuarioController.verificarToken);
+router.put('/resetear-password', UsuarioController.resetearPassword);
 
 module.exports = router;

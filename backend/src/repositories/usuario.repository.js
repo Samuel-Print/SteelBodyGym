@@ -1,6 +1,7 @@
 'use strict';
 
 const { Usuario } = require('../models');
+const { Op } = require('sequelize');
 
 const SAFE_ATTRS = { exclude: ['password_hash', 'token_recuperacion'] };
 
@@ -63,6 +64,51 @@ const UsuarioRepository = {
   updateLastAccess: (id) => {
     return Usuario.update({ ultimo_acceso: new Date() }, { where: { id_usuario: id } });
   },
+
+  findByEmail: (email) => {
+    return Usuario.findOne({ where: { email } });
+  },
+
+  findByToken: (token) => {
+    return Usuario.findOne({
+      where: {
+        token_recuperacion: token,
+        token_expira: { [Op.gt]: new Date() },
+        activo: true
+      }
+    });
+  },
+
+  findByTokenRaw: (token) => {
+    return Usuario.findOne({
+      where: {
+        token_recuperacion: token,
+        token_expira: { [Op.gt]: new Date() },
+        activo: true
+      }
+    });
+  },
+
+  saveToken: async (email, token, expiracion) => {
+    return Usuario.update(
+      { token_recuperacion: token, token_expira: expiracion },
+      { where: { email } }
+    );
+  },
+
+  clearToken: async (id) => {
+    return Usuario.update(
+      { token_recuperacion: null, token_expira: null },
+      { where: { id_usuario: id } }
+    );
+  },
+
+  updatePassword: async (id, password_hash) => {
+    return Usuario.update(
+      { password_hash, token_recuperacion: null, token_expira: null },
+      { where: { id_usuario: id } }
+    );
+  }
 };
 
 module.exports = UsuarioRepository;

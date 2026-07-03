@@ -34,6 +34,25 @@ const UsuarioController = {
     const result = await UsuarioService.reactivate(req.params.id);
     return sendSuccess(res, null, result.mensaje);
   }),
+
+  solicitarRecuperacion: asyncHandler(async (req, res) => {
+    const { email } = req.body;
+    const result = await UsuarioService.solicitarRecuperacion(email);
+    return sendSuccess(res, null, result.mensaje);
+  }),
+
+  verificarToken: asyncHandler(async (req, res) => {
+    const { token } = req.params;
+    const result = await UsuarioService.verificarToken(token);
+    return sendSuccess(res, result);
+  }),
+
+  resetearPassword: asyncHandler(async (req, res) => {
+    const { token, nueva_password } = req.body;
+    const result = await UsuarioService.resetearPassword(token, nueva_password);
+    return sendSuccess(res, null, result.mensaje);
+  })
+
 };
 
 module.exports = UsuarioController;
