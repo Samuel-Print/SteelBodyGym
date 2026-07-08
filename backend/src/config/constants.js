@@ -27,12 +27,6 @@ const constants = {
     INTERNAL: 500,
   },
 
-  // Roles del sistema (preparado para v1.0)
-  ROLES: {
-    ADMIN: 'admin',
-    RECEPCIONISTA: 'recepcionista',
-    CLIENTE: 'cliente',
-  },
 
   // Mensajes genéricos reutilizables
   MESSAGES: {

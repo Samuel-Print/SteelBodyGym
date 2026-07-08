@@ -23,7 +23,6 @@ const AuthService = {
       email,
       password_hash,
       telefono,
-      rol: 'Cliente', // Rol por defecto
       activo: true,
     });
 
@@ -54,7 +53,6 @@ const AuthService = {
       id: usuario.id_usuario,
       email: usuario.email,
       nombre: usuario.nombre,
-      rol: usuario.rol || constants.ROLES.CLIENTE,
     });
 
     return {
@@ -63,7 +61,6 @@ const AuthService = {
         id: usuario.id_usuario,
         nombre: usuario.nombre,
         email: usuario.email,
-        rol: usuario.rol || constants.ROLES.CLIENTE,
       },
     };
   },
