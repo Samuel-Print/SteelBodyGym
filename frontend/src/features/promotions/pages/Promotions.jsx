@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import AdminHeader from '../../../components/layout/AdminHeader';
 import AdminFooter from '../../../components/layout/AdminFooter';
+import PageHeader from "@/components/ui/PageHeader";
 
-import PromotionCreateModal from './CreatePromotionModal';
-import PromotionDeleteModal from './DeletePromotionDialog';
-import PromotionEditModal from './EditPromotionModal';
+import PromotionCreateModal from '../../../features/promotions/components/CreatePromotionModal';
+import PromotionDeleteModal from '../../../features/promotions/components/DeletePromotionDialog';
+import PromotionEditModal from '../../../features/promotions/components/EditPromotionModal';
 
 import {
   Button,
@@ -146,34 +147,28 @@ const Promotions = () => {
 
       <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-20">
 
-        <div className="flex items-end justify-between gap-5 flex-wrap mb-6">
-          <div>
-            <h1 className="text-[26px] font-head font-extrabold text-[var(--text)]">
-              Promociones
-            </h1>
-
-            <p className="text-[var(--muted)] text-sm mt-1">
-              Gestiona las promociones y descuentos activos del gimnasio.
-            </p>
-          </div>
-
-          <Button
-            onClick={() => {
-              setSelectedPromo(null);
-              setShowCreate(true);
-            }}
-            icon={
-              <svg
-                className="w-4 h-4 stroke-current fill-none stroke-2 stroke-linecap-round stroke-linejoin-round"
-                viewBox="0 0 24 24"
+      <PageHeader
+          title="Promociones"
+          description="Gestiona las promociones del gimnasio."
+          action={
+            <Button
+                onClick={() => {
+                  setSelectedPromo(null);
+                  setShowCreate(true);
+                }}
+                icon={
+                  <svg
+                    className="w-4 h-4 stroke-current fill-none stroke-2 stroke-linecap-round stroke-linejoin-round"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                }
               >
-                <path d="M12 5v14M5 12h14" />
-              </svg>
-            }
-          >
-            Nueva promoción
-          </Button>
-        </div>
+              Nueva promoción
+            </Button>
+          }
+      />
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-7">
           {stats.map((stat, index) => (

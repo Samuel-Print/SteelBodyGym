@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import AdminHeader from '../../../components/layout/AdminHeader';
 import AdminFooter from '../../../components/layout/AdminFooter';
+import PageHeader from "@/components/ui/PageHeader";
 
 import CreateClassModal from './CreateClassModal';
 import EditClassModal from './EditClassModal';
@@ -137,27 +138,22 @@ const Classes = () => {
       <AdminHeader />
 
       <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-20">
-        <div className="flex items-end justify-between gap-5 flex-wrap mb-6">
-          <div>
-            <h1 className="text-[26px] font-head font-extrabold text-[var(--text)]">
-              Clases
-            </h1>
-            <p className="text-[var(--muted)] text-sm mt-1">
-              Programa y administra las clases dirigidas del gimnasio.
-            </p>
-          </div>
-
-          <Button
-            onClick={handleCreate}
-            icon={
-              <svg className="w-4 h-4 stroke-current fill-none stroke-2 stroke-linecap-round stroke-linejoin-round" viewBox="0 0 24 24">
-                <path d="M12 5v14M5 12h14" />
-              </svg>
+        <PageHeader
+            title="Clases"
+            description="Programa y administra las clases dirigidas del gimnasio."
+            action={
+              <Button
+                  onClick={handleCreate}
+                    icon={
+                      <svg className="w-4 h-4 stroke-current fill-none stroke-2 stroke-linecap-round stroke-linejoin-round" viewBox="0 0 24 24">
+                        <path d="M12 5v14M5 12h14" />
+                      </svg>
+                    }
+                  >
+                Nueva clase
+              </Button>
             }
-          >
-            Nueva clase
-          </Button>
-        </div>
+        />
 
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-7">

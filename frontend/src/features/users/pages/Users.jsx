@@ -1,15 +1,18 @@
 import { useState } from 'react';
-import AdminHeader from '../../../components/layout/AdminHeader';
-import AdminFooter from '../../../components/layout/AdminFooter';
+import AdminHeader from '@/components/layout/AdminHeader';
+import AdminFooter from '@/components/layout/AdminFooter';
+import PageHeader from "@/components/ui/PageHeader";
 
-import CreateUserModal from './CreateUserModal';
-import EditUserModal from './EditUserModal';
-import DeleteUserDialog from './DeleteUserDialog';
+import CreateUserModal from '../components/CreateUserModal';
+import EditUserModal from '../components/EditUserModal';
+import DeleteUserDialog from '../components/DeleteUserDialog';
+
+import useUsers from '../hooks/useUsers';
 
 import {
   Button,
   StatsCard,
-} from '../../../components/ui';
+} from '@/components/ui';
 
 const Users = () => {
   const [showCreate, setShowCreate] = useState(false);
@@ -19,48 +22,11 @@ const Users = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const [users, setUsers] = useState([
-    {
-      id: 1,
-      name: 'Carlos Martínez',
-      email: 'carlos.m@email.com',
-      phone: '+57 300 123 4567',
-      status: 'Activo',
-      badge: 'green',
-    },
-    {
-      id: 2,
-      name: 'Laura Gómez',
-      email: 'laura.gomez@email.com',
-      phone: '+57 311 987 6543',
-      status: 'Activo',
-      badge: 'green',
-    },
-    {
-      id: 3,
-      name: 'Andrés Ríos',
-      email: 'andres.rios@email.com',
-      phone: '+57 320 456 7890',
-      status: 'Inactivo',
-      badge: 'red',
-    },
-    {
-      id: 4,
-      name: 'María Peña',
-      email: 'maria.pena@email.com',
-      phone: '+57 301 222 3344',
-      status: 'Activo',
-      badge: 'green',
-    },
-    {
-      id: 5,
-      name: 'Julián Torres',
-      email: 'julian.t@email.com',
-      phone: '+57 315 765 4321',
-      status: 'Activo',
-      badge: 'green',
-    },
-  ]);
+  const {
+    users,
+    loading,
+    loadUsers,
+  } = useUsers();
 
   const getBadgeClass = (badge) => {
     switch (badge) {
@@ -129,27 +95,25 @@ const Users = () => {
       <AdminHeader />
 
       <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-20">
-        <div className="flex items-end justify-between gap-5 flex-wrap mb-6">
-          <div>
-            <h1 className="text-[26px] font-head font-extrabold text-[var(--text)]">
-              Usuarios
-            </h1>
-            <p className="text-[var(--muted)] text-sm mt-1">
-              Administra los datos de contacto de los miembros del gimnasio.
-            </p>
-          </div>
-
-          <Button
-            onClick={handleCreate}
-            icon={
-              <svg className="w-4 h-4 stroke-current fill-none stroke-2 stroke-linecap-round stroke-linejoin-round" viewBox="0 0 24 24">
-                <path d="M12 5v14M5 12h14" />
-              </svg>
-            }
-          >
-            Nuevo usuario
-          </Button>
-        </div>
+        <PageHeader
+          title="Usuarios"
+          description="Administra los datos de contacto de los miembros del gimnasio."
+          action={
+            <Button
+              onClick={handleCreate}
+              icon={
+                <svg
+                  className="w-4 h-4 stroke-current fill-none stroke-2"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+              }
+            >
+              Nuevo usuario
+            </Button>
+          }
+        />
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-7">

@@ -3,12 +3,12 @@ import PublicLayout from '../components/layout/PublicLayout';
 import Home from '../pages/public/Home';
 
 // Páginas placeholder (las crearemos después)
-import Login from '../components/auth/Login';
-import Promotions from '../pages/admin/promotions/Promotions';
+import Login from '../features/auth/Login';
+import Promotions from '../pages/admin/Promotions';
 import Plans from '../pages/admin/plans/Plans';
 import Classes from '../pages/admin/classes/Classes';
 import Branches from '../pages/admin/branches/Branches';
-import Users from '../pages/admin/users/Users';
+import Users from '../features/users/pages/Users';
 
 const AppRouter = () => {
   return (

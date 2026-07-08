@@ -3,6 +3,10 @@ import { Toaster } from 'react-hot-toast';
 import AppRouter from './routes/AppRouter';
 import './index.css';
 
+import api from "@/api/axios";
+
+console.log(api.defaults.baseURL);
+
 function App() {
   return (
     <BrowserRouter>

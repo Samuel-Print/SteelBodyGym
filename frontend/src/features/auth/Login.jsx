@@ -1,7 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
+import useAuth from "@/features/auth/hooks/useAuth";
+
 const Login = () => {
+
+  const { login, loading } = useAuth();
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [theme, setTheme] = useState('light');
@@ -19,11 +24,26 @@ const Login = () => {
     localStorage.setItem('theme', newTheme);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Login:', { email, password });
-    // Aquí irá la lógica de autenticación
-  };
+    const handleSubmit = async (e) => {
+
+        e.preventDefault();
+
+        try {
+
+            const data = await login({
+                email,
+                password
+            });
+
+            console.log(data);
+
+        } catch (error) {
+
+            console.error(error);
+
+        }
+
+    };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 relative">
