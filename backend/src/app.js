@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 
 // Importar rutas
+const authRoutes = require('./routes/auth.routes');
 const sedeRoutes = require('./routes/sede.routes');
 const usuarioRoutes = require('./routes/usuario.routes');
 const claseRoutes = require('./routes/clase.routes');
@@ -25,6 +26,7 @@ app.get('/', (req, res) => {
       horarioclases: '/api/horarioclases',
       planes: '/api/planes',
       promociones: '/api/promociones',
+      auth: '/api/auth',
     }
   });
 });
@@ -36,5 +38,6 @@ app.use('/api/clases', claseRoutes);
 app.use('/api/horarioclases', horarioclaseRoutes);
 app.use('/api/planes', planRoutes);
 app.use('/api/promociones', promocionRoutes);
+app.use('/api/auth', authRoutes);
 
 module.exports = app;
