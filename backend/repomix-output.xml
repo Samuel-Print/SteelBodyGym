@@ -1,0 +1,2867 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+app.js
+package.json
+src/app.js
+src/config/constants.js
+src/config/database.js
+src/config/environment.js
+src/controllers/actividad.controller.js
+src/controllers/auth.controller.js
+src/controllers/clase.controller.js
+src/controllers/horarioclase.controller.js
+src/controllers/plan.controller.js
+src/controllers/promocion.controller.js
+src/controllers/sede.controller.js
+src/controllers/usuario.controller.js
+src/middlewares/auth.middleware.js
+src/middlewares/error.middleware.js
+src/middlewares/notFound.middleware.js
+src/middlewares/role.middleware.js
+src/middlewares/validation.middleware.js
+src/models/actividad.js
+src/models/clase.js
+src/models/horarioclase.js
+src/models/index.js
+src/models/plan.js
+src/models/promocion.js
+src/models/sede.js
+src/models/usuario.js
+src/repositories/actividad.repository.js
+src/repositories/clase.repository.js
+src/repositories/horarioclase.repository.js
+src/repositories/plan.repository.js
+src/repositories/promocion.repository.js
+src/repositories/sede.repository.js
+src/repositories/usuario.repository.js
+src/routes/actividad.routes.js
+src/routes/auth.routes.js
+src/routes/clase.routes.js
+src/routes/horarioclase.routes.js
+src/routes/index.js
+src/routes/sede.routes.js
+src/routes/usuario.routes.js
+src/server.js
+src/services/actividad.service.js
+src/services/auth.service.js
+src/services/clase.service.js
+src/services/horarioclase.service.js
+src/services/plan.service.js
+src/services/promocion.service.js
+src/services/sede.service.js
+src/services/usuario.service.js
+src/utils/AppError.js
+src/utils/asyncHandler.js
+src/utils/bcrypt.js
+src/utils/date.js
+src/utils/jwt.js
+src/utils/logger.js
+src/utils/pagination.js
+src/utils/response.js
+src/validators/actividad.validator.js
+src/validators/auth.validator.js
+src/validators/clase.validator.js
+src/validators/horarioclase.validator.js
+src/validators/plan.validator.js
+src/validators/promocion.validator.js
+src/validators/sede.validator.js
+src/validators/usuario.validator.js
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="app.js">
+const app = require('./src/app');
+module.exports = app;
+</file>
+
+<file path="package.json">
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.3",
+    "body-parser": "^2.3.0",
+    "compression": "^1.8.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
+    "helmet": "^8.2.0",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.11.0",
+    "pg": "^8.22.0",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.8",
+    "swagger-jsdoc": "^6.3.0",
+    "swagger-ui-express": "^5.0.1",
+    "winston": "^3.19.0"
+  },
+  "devDependencies": {
+    "jest": "^30.4.2",
+    "nodemon": "^3.1.14",
+    "sequelize-cli": "^6.6.5",
+    "supertest": "^7.2.2"
+  }
+}
+</file>
+
+<file path="src/app.js">
+const express = require('express');
+const cors = require('cors');
+
+// Importar rutas
+const sedeRoutes = require('./routes/sedeRoutes');
+const usuarioRoutes = require('./routes/usuarioRoutes');
+
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+
+// Ruta principal
+app.get('/', (req, res) => {
+  res.json({
+    mensaje: 'API Steel Body Gym',
+    endpoints: {
+      sedes: '/api/sedes',
+      usuarios: '/api/usuarios'
+    }
+  });
+});
+
+// Registrar rutas
+app.use('/api/sedes', sedeRoutes);
+app.use('/api/usuarios', usuarioRoutes);
+
+module.exports = app;
+</file>
+
+<file path="src/config/constants.js">
+'use strict';
+
+/**
+ * Constantes de lógica de negocio del sistema.
+ * NUNCA almacenar credenciales aquí — usar environment.js.
+ */
+const constants = {
+  // Seguridad
+  SALT_ROUNDS: 10,
+  JWT_EXPIRES_IN: '24h',
+
+  // Paginación
+  DEFAULT_PAGE_SIZE: 20,
+  MAX_PAGE_SIZE: 100,
+
+  // HTTP Status codes (semántica)
+  HTTP: {
+    OK: 200,
+    CREATED: 201,
+    NO_CONTENT: 204,
+    BAD_REQUEST: 400,
+    UNAUTHORIZED: 401,
+    FORBIDDEN: 403,
+    NOT_FOUND: 404,
+    CONFLICT: 409,
+    UNPROCESSABLE: 422,
+    INTERNAL: 500,
+  },
+
+  // Roles del sistema (preparado para v1.0)
+  ROLES: {
+    ADMIN: 'admin',
+    RECEPCIONISTA: 'recepcionista',
+    CLIENTE: 'cliente',
+  },
+
+  // Mensajes genéricos reutilizables
+  MESSAGES: {
+    NOT_FOUND: (entity) => `${entity} no encontrado/a`,
+    ALREADY_EXISTS: (field) => `El ${field} ya está registrado`,
+    DELETED: (entity) => `${entity} desactivado/a correctamente`,
+    REACTIVATED: (entity) => `${entity} reactivado/a correctamente`,
+    INVALID_CREDENTIALS: 'Credenciales inválidas',
+    UNAUTHORIZED: 'No autorizado. Token inválido o expirado',
+    FORBIDDEN: 'Acceso denegado. Permisos insuficientes',
+    VALIDATION_ERROR: 'Error de validación',
+  },
+};
+
+module.exports = constants;
+</file>
+
+<file path="src/config/database.js">
+'use strict';
+
+const { Sequelize } = require('sequelize');
+const env = require('./environment');
+
+const sequelize = new Sequelize(env.db.name, env.db.user, env.db.password, {
+  host: env.db.host,
+  port: env.db.port,
+  dialect: 'postgres',
+  logging: env.isDevelopment ? (msg) => require('./environment') && console.log(`[SQL] ${msg}`) : false,
+  pool: {
+    max: 10,
+    min: 0,
+    acquire: 30000,
+    idle: 10000,
+  },
+  define: {
+    underscored: false,
+    freezeTableName: true,
+  },
+});
+
+module.exports = sequelize;
+</file>
+
+<file path="src/config/environment.js">
+'use strict';
+
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../../.env') });
+
+/**
+ * Carga y valida todas las variables de entorno requeridas.
+ * Falla rápido (fail-fast) si alguna variable crítica falta.
+ */
+const REQUIRED_VARS = ['DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASSWORD', 'JWT_SECRET'];
+
+const missing = REQUIRED_VARS.filter((key) => !process.env[key]);
+if (missing.length > 0) {
+  throw new Error(`[ENV] Variables de entorno faltantes: ${missing.join(', ')}`);
+}
+
+const environment = {
+  NODE_ENV: process.env.NODE_ENV || 'development',
+  PORT: parseInt(process.env.PORT, 10) || 3000,
+
+  db: {
+    host: process.env.DB_HOST,
+    port: parseInt(process.env.DB_PORT, 10),
+    name: process.env.DB_NAME,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+  },
+
+  jwt: {
+    secret: process.env.JWT_SECRET,
+    expiresIn: process.env.JWT_EXPIRES_IN || '24h',
+  },
+
+  isDevelopment: process.env.NODE_ENV === 'development',
+  isProduction: process.env.NODE_ENV === 'production',
+  isTest: process.env.NODE_ENV === 'test',
+};
+
+module.exports = environment;
+</file>
+
+<file path="src/controllers/actividad.controller.js">
+'use strict';
+
+const ActividadService = require('../services/actividad.service');
+const { sendSuccess, sendCreated } = require('../utils/response');
+const asyncHandler = require('../utils/asyncHandler');
+
+const ActividadController = {
+  getAll: asyncHandler(async (req, res) => {
+    const data = await ActividadService.getAll(req.query);
+    return sendSuccess(res, data);
+  }),
+
+  getById: asyncHandler(async (req, res) => {
+    const actividad = await ActividadService.getById(req.params.id);
+    return sendSuccess(res, actividad);
+  }),
+
+  create: asyncHandler(async (req, res) => {
+    const actividad = await ActividadService.create(req.body);
+    return sendCreated(res, actividad);
+  }),
+
+  update: asyncHandler(async (req, res) => {
+    const actividad = await ActividadService.update(req.params.id, req.body);
+    return sendSuccess(res, actividad, 'Actividad actualizada correctamente');
+  }),
+
+  softDelete: asyncHandler(async (req, res) => {
+    const result = await ActividadService.softDelete(req.params.id);
+    return sendSuccess(res, null, result.mensaje);
+  }),
+
+  reactivate: asyncHandler(async (req, res) => {
+    const result = await ActividadService.reactivate(req.params.id);
+    return sendSuccess(res, null, result.mensaje);
+  }),
+};
+
+module.exports = ActividadController;
+</file>
+
+<file path="src/controllers/auth.controller.js">
+'use strict';
+
+const AuthService = require('../services/auth.service');
+const { sendSuccess, sendCreated } = require('../utils/response');
+const asyncHandler = require('../utils/asyncHandler');
+
+const AuthController = {
+  register: asyncHandler(async (req, res) => {
+    const usuario = await AuthService.register(req.body);
+    return sendCreated(res, usuario, 'Usuario registrado exitosamente');
+  }),
+
+  login: asyncHandler(async (req, res) => {
+    const result = await AuthService.login(req.body);
+    return sendSuccess(res, result, 'Inicio de sesión exitoso');
+  }),
+};
+
+module.exports = AuthController;
+</file>
+
+<file path="src/controllers/clase.controller.js">
+'use strict';
+
+const ClaseService = require('../services/clase.service');
+const { sendSuccess, sendCreated } = require('../utils/response');
+const asyncHandler = require('../utils/asyncHandler');
+
+const ClaseController = {
+  getAll: asyncHandler(async (req, res) => {
+    const data = await ClaseService.getAll(req.query);
+    return sendSuccess(res, data);
+  }),
+
+  getById: asyncHandler(async (req, res) => {
+    const clase = await ClaseService.getById(req.params.id);
+    return sendSuccess(res, clase);
+  }),
+
+  create: asyncHandler(async (req, res) => {
+    const clase = await ClaseService.create(req.body);
+    return sendCreated(res, clase);
+  }),
+
+  update: asyncHandler(async (req, res) => {
+    const clase = await ClaseService.update(req.params.id, req.body);
+    return sendSuccess(res, clase, 'Clase actualizada correctamente');
+  }),
+
+  softDelete: asyncHandler(async (req, res) => {
+    const result = await ClaseService.softDelete(req.params.id);
+    return sendSuccess(res, null, result.mensaje);
+  }),
+
+  reactivate: asyncHandler(async (req, res) => {
+    const result = await ClaseService.reactivate(req.params.id);
+    return sendSuccess(res, null, result.mensaje);
+  }),
+};
+
+module.exports = ClaseController;
+</file>
+
+<file path="src/controllers/horarioclase.controller.js">
+'use strict';
+
+const HorarioClaseService = require('../services/horarioclase.service');
+const { sendSuccess, sendCreated } = require('../utils/response');
+const asyncHandler = require('../utils/asyncHandler');
+
+const HorarioClaseController = {
+  getAll: asyncHandler(async (req, res) => {
+    const data = await HorarioClaseService.getAll(req.query);
+    return sendSuccess(res, data);
+  }),
+
+  getById: asyncHandler(async (req, res) => {
+    const horario = await HorarioClaseService.getById(req.params.id);
+    return sendSuccess(res, horario);
+  }),
+
+  getByClase: asyncHandler(async (req, res) => {
+    const horarios = await HorarioClaseService.getByClase(req.params.id_clase);
+    return sendSuccess(res, horarios);
+  }),
+
+  create: asyncHandler(async (req, res) => {
+    const horario = await HorarioClaseService.create(req.body);
+    return sendCreated(res, horario);
+  }),
+
+  update: asyncHandler(async (req, res) => {
+    const horario = await HorarioClaseService.update(req.params.id, req.body);
+    return sendSuccess(res, horario, 'Horario actualizado correctamente');
+  }),
+
+  softDelete: asyncHandler(async (req, res) => {
+    const result = await HorarioClaseService.softDelete(req.params.id);
+    return sendSuccess(res, null, result.mensaje);
+  }),
+
+  reactivate: asyncHandler(async (req, res) => {
+    const result = await HorarioClaseService.reactivate(req.params.id);
+    return sendSuccess(res, null, result.mensaje);
+  }),
+};
+
+module.exports = HorarioClaseController;
+</file>
+
+<file path="src/controllers/plan.controller.js">
+'use strict';
+
+const PlanService = require('../services/plan.service');
+const { sendSuccess, sendCreated } = require('../utils/response');
+const asyncHandler = require('../utils/asyncHandler');
+
+const PlanController = {
+  getAll: asyncHandler(async (req, res) => {
+    const data = await PlanService.getAll(req.query);
+    return sendSuccess(res, data);
+  }),
+
+  getById: asyncHandler(async (req, res) => {
+    const plan = await PlanService.getById(req.params.id);
+    return sendSuccess(res, plan);
+  }),
+
+  create: asyncHandler(async (req, res) => {
+    const plan = await PlanService.create(req.body);
+    return sendCreated(res, plan);
+  }),
+
+  update: asyncHandler(async (req, res) => {
+    const plan = await PlanService.update(req.params.id, req.body);
+    return sendSuccess(res, plan, 'Plan actualizado correctamente');
+  }),
+
+  softDelete: asyncHandler(async (req, res) => {
+    const result = await PlanService.softDelete(req.params.id);
+    return sendSuccess(res, null, result.mensaje);
+  }),
+
+  reactivate: asyncHandler(async (req, res) => {
+    const result = await PlanService.reactivate(req.params.id);
+    return sendSuccess(res, null, result.mensaje);
+  }),
+};
+
+module.exports = PlanController;
+</file>
+
+<file path="src/controllers/promocion.controller.js">
+'use strict';
+
+const PromocionService = require('../services/promocion.service');
+const { sendSuccess, sendCreated } = require('../utils/response');
+const asyncHandler = require('../utils/asyncHandler');
+
+const PromocionController = {
+  getAll: asyncHandler(async (req, res) => {
+    const data = await PromocionService.getAll(req.query);
+    return sendSuccess(res, data);
+  }),
+
+  getVigentes: asyncHandler(async (req, res) => {
+    const promociones = await PromocionService.getVigentes();
+    return sendSuccess(res, promociones);
+  }),
+
+  getById: asyncHandler(async (req, res) => {
+    const promocion = await PromocionService.getById(req.params.id);
+    return sendSuccess(res, promocion);
+  }),
+
+  create: asyncHandler(async (req, res) => {
+    const promocion = await PromocionService.create(req.body);
+    return sendCreated(res, promocion);
+  }),
+
+  update: asyncHandler(async (req, res) => {
+    const promocion = await PromocionService.update(req.params.id, req.body);
+    return sendSuccess(res, promocion, 'Promoción actualizada correctamente');
+  }),
+
+  softDelete: asyncHandler(async (req, res) => {
+    const result = await PromocionService.softDelete(req.params.id);
+    return sendSuccess(res, null, result.mensaje);
+  }),
+
+  reactivate: asyncHandler(async (req, res) => {
+    const result = await PromocionService.reactivate(req.params.id);
+    return sendSuccess(res, null, result.mensaje);
+  }),
+};
+
+module.exports = PromocionController;
+</file>
+
+<file path="src/controllers/sede.controller.js">
+'use strict';
+
+const SedeService = require('../services/sede.service');
+const { sendSuccess, sendCreated } = require('../utils/response');
+const asyncHandler = require('../utils/asyncHandler');
+
+const SedeController = {
+  getAll: asyncHandler(async (req, res) => {
+    const data = await SedeService.getAll(req.query);
+    return sendSuccess(res, data);
+  }),
+
+  getById: asyncHandler(async (req, res) => {
+    const sede = await SedeService.getById(req.params.id);
+    return sendSuccess(res, sede);
+  }),
+
+  create: asyncHandler(async (req, res) => {
+    const sede = await SedeService.create(req.body);
+    return sendCreated(res, sede);
+  }),
+
+  update: asyncHandler(async (req, res) => {
+    const sede = await SedeService.update(req.params.id, req.body);
+    return sendSuccess(res, sede, 'Sede actualizada correctamente');
+  }),
+
+  softDelete: asyncHandler(async (req, res) => {
+    const result = await SedeService.softDelete(req.params.id);
+    return sendSuccess(res, null, result.mensaje);
+  }),
+
+  reactivate: asyncHandler(async (req, res) => {
+    const result = await SedeService.reactivate(req.params.id);
+    return sendSuccess(res, null, result.mensaje);
+  }),
+};
+
+module.exports = SedeController;
+</file>
+
+<file path="src/controllers/usuario.controller.js">
+'use strict';
+
+const UsuarioService = require('../services/usuario.service');
+const { sendSuccess, sendCreated } = require('../utils/response');
+const asyncHandler = require('../utils/asyncHandler');
+
+const UsuarioController = {
+  getAll: asyncHandler(async (req, res) => {
+    const data = await UsuarioService.getAll(req.query);
+    return sendSuccess(res, data);
+  }),
+
+  getById: asyncHandler(async (req, res) => {
+    const usuario = await UsuarioService.getById(req.params.id);
+    return sendSuccess(res, usuario);
+  }),
+
+  create: asyncHandler(async (req, res) => {
+    const usuario = await UsuarioService.create(req.body);
+    return sendCreated(res, usuario);
+  }),
+
+  update: asyncHandler(async (req, res) => {
+    const usuario = await UsuarioService.update(req.params.id, req.body);
+    return sendSuccess(res, usuario, 'Usuario actualizado correctamente');
+  }),
+
+  softDelete: asyncHandler(async (req, res) => {
+    const result = await UsuarioService.softDelete(req.params.id);
+    return sendSuccess(res, null, result.mensaje);
+  }),
+
+  reactivate: asyncHandler(async (req, res) => {
+    const result = await UsuarioService.reactivate(req.params.id);
+    return sendSuccess(res, null, result.mensaje);
+  }),
+};
+
+module.exports = UsuarioController;
+</file>
+
+<file path="src/middlewares/auth.middleware.js">
+'use strict';
+
+const { verifyToken, extractBearerToken } = require('../utils/jwt');
+const AppError = require('../utils/AppError');
+const constants = require('../config/constants');
+
+/**
+ * Middleware de autenticación JWT.
+ * Verifica que el request incluya un Bearer Token válido.
+ * Inyecta req.user con el payload decodificado.
+ */
+const authenticate = (req, res, next) => {
+  try {
+    const token = extractBearerToken(req.headers.authorization);
+    const decoded = verifyToken(token);
+    req.user = decoded; // { id, email, rol, ... }
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = authenticate;
+</file>
+
+<file path="src/middlewares/error.middleware.js">
+'use strict';
+
+const AppError = require('../utils/AppError');
+const { sendError } = require('../utils/response');
+const logger = require('../utils/logger');
+const env = require('../config/environment');
+
+/**
+ * Convierte errores conocidos de Sequelize a AppError con mensajes claros.
+ */
+const handleSequelizeError = (err) => {
+  if (err.name === 'SequelizeUniqueConstraintError') {
+    const field = err.errors[0]?.path || 'campo';
+    return new AppError(`El ${field} ya está registrado`, 409);
+  }
+  if (err.name === 'SequelizeValidationError') {
+    const message = err.errors.map((e) => e.message).join(', ');
+    return new AppError(message, 422);
+  }
+  if (err.name === 'SequelizeForeignKeyConstraintError') {
+    return new AppError('Referencia a un registro inexistente', 400);
+  }
+  return null;
+};
+
+/**
+ * Middleware global de manejo de errores.
+ * Debe ser el ÚLTIMO middleware registrado en app.js.
+ * Recibe errores propagados con next(error) desde controladores/servicios.
+ */
+// eslint-disable-next-line no-unused-vars
+const errorHandler = (err, req, res, next) => {
+  // Intentar convertir errores Sequelize a AppError
+  const sequelizeErr = handleSequelizeError(err);
+  if (sequelizeErr) return errorHandler(sequelizeErr, req, res, next);
+
+  const statusCode = err.statusCode || 500;
+  const message = err.isOperational ? err.message : 'Error interno del servidor';
+
+  // Loggear el error siempre
+  logger.error(`${req.method} ${req.originalUrl} → ${statusCode}: ${err.message}`, {
+    stack: env.isDevelopment ? err.stack : undefined,
+  });
+
+  return sendError(
+    res,
+    message,
+    statusCode,
+    env.isDevelopment && !err.isOperational ? { stack: err.stack } : undefined
+  );
+};
+
+module.exports = errorHandler;
+</file>
+
+<file path="src/middlewares/notFound.middleware.js">
+'use strict';
+
+const AppError = require('../utils/AppError');
+
+/**
+ * Middleware catch-all para rutas no existentes.
+ * Debe registrarse DESPUÉS de todas las rutas y ANTES del errorHandler.
+ */
+const notFound = (req, res, next) => {
+  next(new AppError(`Ruta no encontrada: ${req.method} ${req.originalUrl}`, 404));
+};
+
+module.exports = notFound;
+</file>
+
+<file path="src/middlewares/role.middleware.js">
+'use strict';
+
+const AppError = require('../utils/AppError');
+const constants = require('../config/constants');
+
+/**
+ * Middleware para autorización de roles.
+ * Uso: router.get('/', authenticate, authorize('Administrador', 'Empleado'), controller)
+ */
+const authorize = (...allowedRoles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return next(new AppError('No autenticado. Inicie sesión.', constants.HTTP.UNAUTHORIZED));
+    }
+
+    const userRole = req.user.rol; // 'Administrador', 'Empleado', 'Cliente'
+    if (!allowedRoles.includes(userRole)) {
+      return next(new AppError('Acceso denegado. Permisos insuficientes.', constants.HTTP.FORBIDDEN));
+    }
+
+    next();
+  };
+};
+
+module.exports = authorize;
+</file>
+
+<file path="src/middlewares/validation.middleware.js">
+'use strict';
+
+const { sendError } = require('../utils/response');
+const constants = require('../config/constants');
+
+/**
+ * Middleware ejecutor de validadores.
+ * Uso: router.post('/', validate(sedeValidator.create), controller)
+ */
+const validate = (validatorFn) => (req, res, next) => {
+  const errors = validatorFn(req);
+  if (errors && errors.length > 0) {
+    return sendError(
+      res,
+      constants.MESSAGES.VALIDATION_ERROR,
+      constants.HTTP.UNPROCESSABLE,
+      errors
+    );
+  }
+  next();
+};
+
+module.exports = validate;
+</file>
+
+<file path="src/models/actividad.js">
+'use strict';
+const { Model } = require('sequelize');
+
+module.exports = (sequelize, DataTypes) => {
+  class Actividad extends Model {
+    static associate(models) {
+      // Si quieres relacionar con Sede, descomenta:
+      // Actividad.belongsTo(models.Sede, { foreignKey: 'sede_id', as: 'sede' });
+    }
+  }
+  
+  Actividad.init({
+    id_actividad: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true
+    },
+    nombre: {
+      type: DataTypes.STRING(100),
+      allowNull: false
+    },
+    sede: {
+      type: DataTypes.STRING(100),
+      allowNull: false
+    },
+    horario: {
+      type: DataTypes.DATE,
+      allowNull: false
+    },
+    descripcion: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    imagen_url: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    activo: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
+    },
+    fecha_creacion: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW
+    }
+  }, {
+    sequelize,
+    modelName: 'Actividad',
+    tableName: 'actividades',
+    timestamps: false
+  });
+  
+  return Actividad;
+};
+</file>
+
+<file path="src/models/clase.js">
+'use strict';
+const { Model } = require('sequelize');
+
+module.exports = (sequelize, DataTypes) => {
+  class Clase extends Model {
+    static associate(models) {
+      Clase.hasMany(models.HorarioClase, {
+        foreignKey: 'id_clase',
+        as: 'horarios'
+      });
+    }
+  }
+  
+  Clase.init({
+    id_clase: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true
+    },
+    nombre: {
+      type: DataTypes.STRING(100),
+      allowNull: false
+    },
+    descripcion: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    imagen_url: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    activo: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
+    },
+    fecha_creacion: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW
+    }
+  }, {
+    sequelize,
+    modelName: 'Clase',
+    tableName: 'clases',
+    timestamps: false
+  });
+  
+  return Clase;
+};
+</file>
+
+<file path="src/models/horarioclase.js">
+'use strict';
+const { Model } = require('sequelize');
+
+module.exports = (sequelize, DataTypes) => {
+  class HorarioClase extends Model {
+    static associate(models) {
+      HorarioClase.belongsTo(models.Clase, {
+        foreignKey: 'id_clase',
+        as: 'clase'
+      });
+    }
+  }
+  
+  HorarioClase.init({
+    id_horario: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true
+    },
+    id_clase: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'clases',
+        key: 'id_clase'
+      }
+    },
+    dia_semana: {
+      type: DataTypes.ENUM('Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'),
+      allowNull: false
+    },
+    hora_inicio: {
+      type: DataTypes.TIME,
+      allowNull: false
+    },
+    hora_fin: {
+      type: DataTypes.TIME,
+      allowNull: false
+    },
+    activo: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
+    }
+  }, {
+    sequelize,
+    modelName: 'HorarioClase',
+    tableName: 'horarios_clases',
+    timestamps: false
+  });
+  
+  return HorarioClase;
+};
+</file>
+
+<file path="src/models/index.js">
+'use strict';
+
+const fs = require('fs');
+const path = require('path');
+const Sequelize = require('sequelize');
+const basename = path.basename(__filename);
+const sequelize = require('../config/database');
+const db = {};
+
+fs
+  .readdirSync(__dirname)
+  .filter(file => {
+    return (
+      file.indexOf('.') !== 0 &&
+      file !== basename &&
+      file.slice(-3) === '.js' &&
+      file.indexOf('.test.js') === -1
+    );
+  })
+  .forEach(file => {
+    const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes);
+    db[model.name] = model;
+  });
+
+Object.keys(db).forEach(modelName => {
+  if (db[modelName].associate) {
+    db[modelName].associate(db);
+  }
+});
+
+db.sequelize = sequelize;
+db.Sequelize = Sequelize;
+
+module.exports = db;
+</file>
+
+<file path="src/models/plan.js">
+'use strict';
+const { Model } = require('sequelize');
+
+module.exports = (sequelize, DataTypes) => {
+  class Plan extends Model {
+    static associate(models) {}
+  }
+  
+  Plan.init({
+    id_plan: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true
+    },
+    nombre: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+      unique: true
+    },
+    tiempo_meses: {
+      type: DataTypes.DECIMAL(3, 1),
+      allowNull: true
+    },
+    costo: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false
+    },
+    descripcion: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    imagen_url: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    destacado: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
+    orden_display: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0
+    },
+    fecha_creacion: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW
+    },
+    activo: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
+    }
+  }, {
+    sequelize,
+    modelName: 'Plan',
+    tableName: 'planes',
+    timestamps: false
+  });
+  
+  return Plan;
+};
+</file>
+
+<file path="src/models/promocion.js">
+'use strict';
+const { Model } = require('sequelize');
+
+module.exports = (sequelize, DataTypes) => {
+  class Promocion extends Model {
+    static associate(models) {}
+  }
+  
+  Promocion.init({
+    id_promocion: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true
+    },
+    nombre: {
+      type: DataTypes.STRING(100),
+      allowNull: false
+    },
+    descripcion: {
+      type: DataTypes.TEXT,
+      allowNull: false
+    },
+    imagen_url: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    fecha_caducacion: {
+      type: DataTypes.DATEONLY,
+      allowNull: false
+    },
+    activo: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
+    },
+    fecha_creacion: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW
+    }
+  }, {
+    sequelize,
+    modelName: 'Promocion',
+    tableName: 'promociones',
+    timestamps: false
+  });
+  
+  return Promocion;
+};
+</file>
+
+<file path="src/models/sede.js">
+'use strict';
+const { Model } = require('sequelize');
+
+module.exports = (sequelize, DataTypes) => {
+  class Sede extends Model {
+    static associate(models) {}
+  }
+  
+  Sede.init({
+    id_sede: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true
+    },
+    nombre: {
+      type: DataTypes.STRING(100),
+      allowNull: false
+    },
+    direccion: {
+      type: DataTypes.TEXT,
+      allowNull: false
+    },
+    latitud: {
+      type: DataTypes.DECIMAL(10, 8),
+      allowNull: true
+    },
+    longitud: {
+      type: DataTypes.DECIMAL(11, 8),
+      allowNull: true
+    },
+    horario_atencion: {
+      type: DataTypes.TEXT,
+      allowNull: false
+    },
+    telefono: {
+      type: DataTypes.STRING(20),
+      allowNull: true
+    },
+    imagen_url: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    activo: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
+    }
+  }, {
+    sequelize,
+    modelName: 'Sede',
+    tableName: 'sedes',
+    timestamps: false
+  });
+  
+  return Sede;
+};
+</file>
+
+<file path="src/models/usuario.js">
+'use strict';
+const { Model } = require('sequelize');
+
+module.exports = (sequelize, DataTypes) => {
+  class Usuario extends Model {
+    static associate(models) {}
+  }
+  
+  Usuario.init({
+    id_usuario: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true
+    },
+    nombre: {
+      type: DataTypes.STRING(100),
+      allowNull: false
+    },
+    email: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+      unique: true,
+      validate: {
+        isEmail: true
+      }
+    },
+    password_hash: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    telefono: {                        
+      type: DataTypes.STRING(20),
+      allowNull: true
+    },
+    token_recuperacion: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    token_expira: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    ultimo_acceso: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    fecha_registro: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW
+    },
+    activo: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
+    }
+  }, {
+    sequelize,
+    modelName: 'Usuario',
+    tableName: 'usuarios',
+    timestamps: false
+  });
+  
+  return Usuario;
+};
+</file>
+
+<file path="src/repositories/actividad.repository.js">
+'use strict';
+
+const { Actividad } = require('../models');
+
+const ActividadRepository = {
+  findAndCount: (options) => {
+    return Actividad.findAndCountAll({
+      where: options.where,
+      limit: options.limit,
+      offset: options.offset,
+      order: options.order,
+    });
+  },
+
+  findAll: () => {
+    return Actividad.findAll({ where: { activo: true }, order: [['id_actividad', 'ASC']] });
+  },
+
+  findAllIncludeInactive: () => {
+    return Actividad.findAll({ order: [['id_actividad', 'ASC']] });
+  },
+
+  findById: (id) => {
+    return Actividad.findByPk(id);
+  },
+
+  create: (data) => {
+    return Actividad.create(data);
+  },
+
+  update: async (id, data) => {
+    const actividad = await Actividad.findByPk(id);
+    if (!actividad) return null;
+    return actividad.update(data);
+  },
+
+  softDelete: async (id) => {
+    const actividad = await Actividad.findByPk(id);
+    if (!actividad) return null;
+    return actividad.update({ activo: false });
+  },
+
+  reactivate: async (id) => {
+    const actividad = await Actividad.findByPk(id);
+    if (!actividad) return null;
+    return actividad.update({ activo: true });
+  },
+};
+
+module.exports = ActividadRepository;
+</file>
+
+<file path="src/repositories/clase.repository.js">
+'use strict';
+
+const { Clase, HorarioClase } = require('../models');
+
+const ClaseRepository = {
+  findAndCount: (options) => {
+    return Clase.findAndCountAll({
+      where: options.where,
+      limit: options.limit,
+      offset: options.offset,
+      order: options.order,
+      include: [
+        {
+          model: HorarioClase,
+          as: 'horarios',
+          where: { activo: true },
+          required: false,
+        },
+      ],
+    });
+  },
+
+  findAll: () => {
+    return Clase.findAll({
+      where: { activo: true },
+      order: [['id_clase', 'ASC']],
+      include: [{ model: HorarioClase, as: 'horarios', where: { activo: true }, required: false }],
+    });
+  },
+
+  findAllIncludeInactive: () => {
+    return Clase.findAll({ order: [['id_clase', 'ASC']] });
+  },
+
+  findById: (id) => {
+    return Clase.findByPk(id, {
+      include: [{ model: HorarioClase, as: 'horarios', required: false }],
+    });
+  },
+
+  create: (data) => {
+    return Clase.create(data);
+  },
+
+  update: async (id, data) => {
+    const clase = await Clase.findByPk(id);
+    if (!clase) return null;
+    return clase.update(data);
+  },
+
+  softDelete: async (id) => {
+    const clase = await Clase.findByPk(id);
+    if (!clase) return null;
+    return clase.update({ activo: false });
+  },
+
+  reactivate: async (id) => {
+    const clase = await Clase.findByPk(id);
+    if (!clase) return null;
+    return clase.update({ activo: true });
+  },
+};
+
+module.exports = ClaseRepository;
+</file>
+
+<file path="src/repositories/horarioclase.repository.js">
+'use strict';
+
+const { HorarioClase, Clase } = require('../models');
+
+const HorarioClaseRepository = {
+  findAndCount: (options) => {
+    return HorarioClase.findAndCountAll({
+      where: options.where,
+      limit: options.limit,
+      offset: options.offset,
+      order: options.order,
+      include: [{ model: Clase, as: 'clase', required: false }],
+    });
+  },
+
+  findAll: () => {
+    return HorarioClase.findAll({
+      where: { activo: true },
+      order: [['id_horario', 'ASC']],
+      include: [{ model: Clase, as: 'clase', required: false }],
+    });
+  },
+
+  findById: (id) => {
+    return HorarioClase.findByPk(id, {
+      include: [{ model: Clase, as: 'clase', required: false }],
+    });
+  },
+
+  findByClase: (id_clase) => {
+    return HorarioClase.findAll({ where: { id_clase, activo: true } });
+  },
+
+  create: (data) => {
+    return HorarioClase.create(data);
+  },
+
+  update: async (id, data) => {
+    const horario = await HorarioClase.findByPk(id);
+    if (!horario) return null;
+    return horario.update(data);
+  },
+
+  softDelete: async (id) => {
+    const horario = await HorarioClase.findByPk(id);
+    if (!horario) return null;
+    return horario.update({ activo: false });
+  },
+
+  reactivate: async (id) => {
+    const horario = await HorarioClase.findByPk(id);
+    if (!horario) return null;
+    return horario.update({ activo: true });
+  },
+};
+
+module.exports = HorarioClaseRepository;
+</file>
+
+<file path="src/repositories/plan.repository.js">
+'use strict';
+
+const { Plan } = require('../models');
+
+const PlanRepository = {
+  findAndCount: (options) => {
+    return Plan.findAndCountAll({
+      where: options.where,
+      limit: options.limit,
+      offset: options.offset,
+      order: options.order,
+    });
+  },
+
+  findAll: () => {
+    return Plan.findAll({ where: { activo: true }, order: [['orden_display', 'ASC'], ['id_plan', 'ASC']] });
+  },
+
+  findAllIncludeInactive: () => {
+    return Plan.findAll({ order: [['orden_display', 'ASC']] });
+  },
+
+  findById: (id) => {
+    return Plan.findByPk(id);
+  },
+
+  create: (data) => {
+    return Plan.create(data);
+  },
+
+  update: async (id, data) => {
+    const plan = await Plan.findByPk(id);
+    if (!plan) return null;
+    return plan.update(data);
+  },
+
+  softDelete: async (id) => {
+    const plan = await Plan.findByPk(id);
+    if (!plan) return null;
+    return plan.update({ activo: false });
+  },
+
+  reactivate: async (id) => {
+    const plan = await Plan.findByPk(id);
+    if (!plan) return null;
+    return plan.update({ activo: true });
+  },
+};
+
+module.exports = PlanRepository;
+</file>
+
+<file path="src/repositories/promocion.repository.js">
+'use strict';
+
+const { Promocion } = require('../models');
+
+const PromocionRepository = {
+  findAndCount: (options) => {
+    return Promocion.findAndCountAll({
+      where: options.where,
+      limit: options.limit,
+      offset: options.offset,
+      order: options.order,
+    });
+  },
+
+  findAll: () => {
+    return Promocion.findAll({
+      where: { activo: true },
+      order: [['fecha_caducacion', 'ASC']],
+    });
+  },
+
+  findVigentes: () => {
+    const { Op } = require('sequelize');
+    return Promocion.findAll({
+      where: {
+        activo: true,
+        fecha_caducacion: { [Op.gte]: new Date() },
+      },
+      order: [['fecha_caducacion', 'ASC']],
+    });
+  },
+
+  findById: (id) => {
+    return Promocion.findByPk(id);
+  },
+
+  create: (data) => {
+    return Promocion.create(data);
+  },
+
+  update: async (id, data) => {
+    const promocion = await Promocion.findByPk(id);
+    if (!promocion) return null;
+    return promocion.update(data);
+  },
+
+  softDelete: async (id) => {
+    const promocion = await Promocion.findByPk(id);
+    if (!promocion) return null;
+    return promocion.update({ activo: false });
+  },
+
+  reactivate: async (id) => {
+    const promocion = await Promocion.findByPk(id);
+    if (!promocion) return null;
+    return promocion.update({ activo: true });
+  },
+};
+
+module.exports = PromocionRepository;
+</file>
+
+<file path="src/repositories/sede.repository.js">
+'use strict';
+
+const { Sede } = require('../models');
+
+const SedeRepository = {
+  findAndCount: (options) => {
+    return Sede.findAndCountAll({
+      where: options.where,
+      limit: options.limit,
+      offset: options.offset,
+      order: options.order,
+    });
+  },
+
+  findAll: () => {
+    return Sede.findAll({ where: { activo: true }, order: [['id_sede', 'ASC']] });
+  },
+
+  findById: (id) => {
+    return Sede.findByPk(id);
+  },
+
+  create: (data) => {
+    return Sede.create(data);
+  },
+
+  update: async (id, data) => {
+    const sede = await Sede.findByPk(id);
+    if (!sede) return null;
+    return sede.update(data);
+  },
+
+  softDelete: async (id) => {
+    const sede = await Sede.findByPk(id);
+    if (!sede) return null;
+    return sede.update({ activo: false });
+  },
+
+  reactivate: async (id) => {
+    const sede = await Sede.findByPk(id);
+    if (!sede) return null;
+    return sede.update({ activo: true });
+  },
+};
+
+module.exports = SedeRepository;
+</file>
+
+<file path="src/repositories/usuario.repository.js">
+'use strict';
+
+const { Usuario } = require('../models');
+
+const SAFE_ATTRS = { exclude: ['password_hash', 'token_recuperacion'] };
+
+const UsuarioRepository = {
+  findAndCount: (options) => {
+    return Usuario.findAndCountAll({
+      where: options.where,
+      limit: options.limit,
+      offset: options.offset,
+      order: options.order,
+      attributes: SAFE_ATTRS,
+    });
+  },
+
+  findAll: () => {
+    return Usuario.findAll({
+      where: { activo: true },
+      order: [['id_usuario', 'ASC']],
+      attributes: SAFE_ATTRS,
+    });
+  },
+
+  findById: (id) => {
+    return Usuario.findByPk(id, { attributes: SAFE_ATTRS });
+  },
+
+  findByIdWithPassword: (id) => {
+    return Usuario.findByPk(id);
+  },
+
+  findByEmail: (email) => {
+    return Usuario.findOne({ where: { email } });
+  },
+
+  create: (data) => {
+    return Usuario.create(data);
+  },
+
+  update: async (id, data) => {
+    const usuario = await Usuario.findByPk(id);
+    if (!usuario) return null;
+    await usuario.update(data);
+    const updated = usuario.toJSON();
+    delete updated.password_hash;
+    return updated;
+  },
+
+  softDelete: async (id) => {
+    const usuario = await Usuario.findByPk(id);
+    if (!usuario) return null;
+    return usuario.update({ activo: false });
+  },
+
+  reactivate: async (id) => {
+    const usuario = await Usuario.findByPk(id);
+    if (!usuario) return null;
+    return usuario.update({ activo: true });
+  },
+
+  updateLastAccess: (id) => {
+    return Usuario.update({ ultimo_acceso: new Date() }, { where: { id_usuario: id } });
+  },
+};
+
+module.exports = UsuarioRepository;
+</file>
+
+<file path="src/routes/actividad.routes.js">
+'use strict';
+
+const express = require('express');
+const router = express.Router();
+const ActividadController = require('../controllers/actividad.controller');
+const authenticate = require('../middlewares/auth.middleware');
+const authorize = require('../middlewares/role.middleware');
+const validate = require('../middlewares/validation.middleware');
+const actividadValidator = require('../validators/actividad.validator');
+
+router.get('/', ActividadController.getAll);
+router.get('/:id', ActividadController.getById);
+
+// Rutas protegidas
+router.post(
+  '/',
+  authenticate,
+  authorize('Administrador', 'Empleado'),
+  validate(actividadValidator.create),
+  ActividadController.create
+);
+router.put(
+  '/:id',
+  authenticate,
+  authorize('Administrador', 'Empleado'),
+  validate(actividadValidator.update),
+  ActividadController.update
+);
+router.delete('/:id', authenticate, authorize('Administrador'), ActividadController.softDelete);
+router.put('/:id/reactivar', authenticate, authorize('Administrador'), ActividadController.reactivate);
+
+module.exports = router;
+</file>
+
+<file path="src/routes/auth.routes.js">
+'use strict';
+
+const express = require('express');
+const router = express.Router();
+const AuthController = require('../controllers/auth.controller');
+const validate = require('../middlewares/validation.middleware');
+const authValidator = require('../validators/auth.validator');
+
+router.post('/register', validate(authValidator.register), AuthController.register);
+router.post('/login', validate(authValidator.login), AuthController.login);
+
+module.exports = router;
+</file>
+
+<file path="src/routes/clase.routes.js">
+'use strict';
+
+const express = require('express');
+const router = express.Router();
+const ClaseController = require('../controllers/clase.controller');
+const HorarioClaseController = require('../controllers/horarioclase.controller');
+const authenticate = require('../middlewares/auth.middleware');
+const authorize = require('../middlewares/role.middleware');
+const validate = require('../middlewares/validation.middleware');
+const claseValidator = require('../validators/clase.validator');
+
+router.get('/', ClaseController.getAll);
+router.get('/:id', ClaseController.getById);
+router.get('/:id_clase/horarios', HorarioClaseController.getByClase);
+
+// Rutas protegidas
+router.post(
+  '/',
+  authenticate,
+  authorize('Administrador', 'Empleado'),
+  validate(claseValidator.create),
+  ClaseController.create
+);
+router.put(
+  '/:id',
+  authenticate,
+  authorize('Administrador', 'Empleado'),
+  validate(claseValidator.update),
+  ClaseController.update
+);
+router.delete('/:id', authenticate, authorize('Administrador'), ClaseController.softDelete);
+router.put('/:id/reactivar', authenticate, authorize('Administrador'), ClaseController.reactivate);
+
+module.exports = router;
+</file>
+
+<file path="src/routes/horarioclase.routes.js">
+'use strict';
+
+const express = require('express');
+const router = express.Router();
+const HorarioClaseController = require('../controllers/horarioclase.controller');
+const authenticate = require('../middlewares/auth.middleware');
+const authorize = require('../middlewares/role.middleware');
+const validate = require('../middlewares/validation.middleware');
+const horarioclaseValidator = require('../validators/horarioclase.validator');
+
+router.get('/', HorarioClaseController.getAll);
+router.get('/:id', HorarioClaseController.getById);
+
+// Rutas protegidas
+router.post(
+  '/',
+  authenticate,
+  authorize('Administrador', 'Empleado'),
+  validate(horarioclaseValidator.create),
+  HorarioClaseController.create
+);
+router.put(
+  '/:id',
+  authenticate,
+  authorize('Administrador', 'Empleado'),
+  validate(horarioclaseValidator.update),
+  HorarioClaseController.update
+);
+router.delete('/:id', authenticate, authorize('Administrador'), HorarioClaseController.softDelete);
+router.put('/:id/reactivar', authenticate, authorize('Administrador'), HorarioClaseController.reactivate);
+
+module.exports = router;
+</file>
+
+<file path="src/routes/index.js">
+'use strict';
+
+const express = require('express');
+const router = express.Router();
+
+const authRoutes = require('./auth.routes');
+const sedeRoutes = require('./sede.routes');
+const usuarioRoutes = require('./usuario.routes');
+const actividadRoutes = require('./actividad.routes');
+const claseRoutes = require('./clase.routes');
+const horarioclaseRoutes = require('./horarioclase.routes');
+const planRoutes = require('./plan.routes');
+const promocionRoutes = require('./promocion.routes');
+
+router.use('/auth', authRoutes);
+router.use('/sedes', sedeRoutes);
+router.use('/usuarios', usuarioRoutes);
+router.use('/actividades', actividadRoutes);
+router.use('/clases', claseRoutes);
+router.use('/horarios-clases', horarioclaseRoutes);
+router.use('/planes', planRoutes);
+router.use('/promociones', promocionRoutes);
+
+module.exports = router;
+</file>
+
+<file path="src/routes/sede.routes.js">
+'use strict';
+
+const express = require('express');
+const router = express.Router();
+const SedeController = require('../controllers/sede.controller');
+const authenticate = require('../middlewares/auth.middleware');
+const authorize = require('../middlewares/role.middleware');
+const validate = require('../middlewares/validation.middleware');
+const sedeValidator = require('../validators/sede.validator');
+
+router.get('/', SedeController.getAll);
+router.get('/:id', SedeController.getById);
+
+// Rutas protegidas
+router.post(
+  '/',
+  authenticate,
+  authorize('Administrador', 'Empleado'),
+  validate(sedeValidator.create),
+  SedeController.create
+);
+router.put(
+  '/:id',
+  authenticate,
+  authorize('Administrador', 'Empleado'),
+  validate(sedeValidator.update),
+  SedeController.update
+);
+router.delete('/:id', authenticate, authorize('Administrador'), SedeController.softDelete);
+router.put('/:id/reactivar', authenticate, authorize('Administrador'), SedeController.reactivate);
+
+module.exports = router;
+</file>
+
+<file path="src/routes/usuario.routes.js">
+'use strict';
+
+const express = require('express');
+const router = express.Router();
+const UsuarioController = require('../controllers/usuario.controller');
+const authenticate = require('../middlewares/auth.middleware');
+const authorize = require('../middlewares/role.middleware');
+const validate = require('../middlewares/validation.middleware');
+const usuarioValidator = require('../validators/usuario.validator');
+
+// Rutas de administración de usuarios
+router.get('/', authenticate, authorize('Administrador', 'Empleado'), UsuarioController.getAll);
+router.get('/:id', authenticate, authorize('Administrador', 'Empleado'), UsuarioController.getById);
+
+router.post(
+  '/',
+  authenticate,
+  authorize('Administrador'),
+  validate(usuarioValidator.create),
+  UsuarioController.create
+);
+router.put(
+  '/:id',
+  authenticate,
+  authorize('Administrador'),
+  validate(usuarioValidator.update),
+  UsuarioController.update
+);
+router.delete('/:id', authenticate, authorize('Administrador'), UsuarioController.softDelete);
+router.put('/:id/reactivar', authenticate, authorize('Administrador'), UsuarioController.reactivate);
+
+module.exports = router;
+</file>
+
+<file path="src/server.js">
+const app = require('./app');
+const sequelize = require('./config/database');
+const constants = require('./config/constants');
+
+const PORT = process.env.PORT || 3000;
+
+async function startServer() {
+  try {
+    // Verificar conexión a la base de datos
+    await sequelize.authenticate();
+    console.log('Conexión a PostgreSQL establecida con éxito.');
+
+    // Iniciar servidor Express
+    app.listen(PORT, () => {
+      console.log(`Servidor corriendo en http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error('No se pudo conectar a la base de datos:', error.message);
+    process.exit(1);
+  }
+}
+
+startServer();
+</file>
+
+<file path="src/services/actividad.service.js">
+'use strict';
+
+const ActividadRepository = require('../repositories/actividad.repository');
+const AppError = require('../utils/AppError');
+const constants = require('../config/constants');
+const { getPagination, getPagingData } = require('../utils/pagination');
+const { Op } = require('sequelize');
+
+const ActividadService = {
+  getAll: async (query) => {
+    const { limit, offset, order, page } = getPagination(query);
+    const where = { activo: true };
+
+    if (query.search) {
+      where[Op.or] = [
+        { nombre: { [Op.iLike]: `%${query.search}%` } },
+        { sede: { [Op.iLike]: `%${query.search}%` } },
+        { descripcion: { [Op.iLike]: `%${query.search}%` } },
+      ];
+    }
+
+    if (query.sede) {
+      where.sede = { [Op.iLike]: `%${query.sede}%` };
+    }
+
+    const data = await ActividadRepository.findAndCount({ where, limit, offset, order });
+    return getPagingData(data, page, limit);
+  },
+
+  getById: async (id) => {
+    const actividad = await ActividadRepository.findById(id);
+    if (!actividad) throw new AppError(constants.MESSAGES.NOT_FOUND('Actividad'), constants.HTTP.NOT_FOUND);
+    return actividad;
+  },
+
+  create: (data) => ActividadRepository.create(data),
+
+  update: async (id, data) => {
+    const result = await ActividadRepository.update(id, data);
+    if (!result) throw new AppError(constants.MESSAGES.NOT_FOUND('Actividad'), constants.HTTP.NOT_FOUND);
+    return result;
+  },
+
+  softDelete: async (id) => {
+    const result = await ActividadRepository.softDelete(id);
+    if (!result) throw new AppError(constants.MESSAGES.NOT_FOUND('Actividad'), constants.HTTP.NOT_FOUND);
+    return { mensaje: constants.MESSAGES.DELETED('Actividad') };
+  },
+
+  reactivate: async (id) => {
+    const result = await ActividadRepository.reactivate(id);
+    if (!result) throw new AppError(constants.MESSAGES.NOT_FOUND('Actividad'), constants.HTTP.NOT_FOUND);
+    return { mensaje: constants.MESSAGES.REACTIVATED('Actividad') };
+  },
+};
+
+module.exports = ActividadService;
+</file>
+
+<file path="src/services/auth.service.js">
+'use strict';
+
+const UsuarioRepository = require('../repositories/usuario.repository');
+const { hash: hashPassword, compare } = require('../utils/bcrypt');
+const { generateToken } = require('../utils/jwt');
+const AppError = require('../utils/AppError');
+const constants = require('../config/constants');
+
+const AuthService = {
+  /**
+   * Registra un nuevo usuario en el sistema.
+   * Valida duplicado de email, encripta contraseña y retorna el usuario creado sin datos sensibles.
+   */
+  register: async ({ nombre, email, password, telefono }) => {
+    const existe = await UsuarioRepository.findByEmail(email);
+    if (existe) {
+      throw new AppError(constants.MESSAGES.ALREADY_EXISTS('email'), constants.HTTP.CONFLICT);
+    }
+
+    const password_hash = await hashPassword(password);
+    const usuario = await UsuarioRepository.create({
+      nombre,
+      email,
+      password_hash,
+      telefono,
+      rol: 'Cliente', // Rol por defecto
+      activo: true,
+    });
+
+    const data = usuario.toJSON();
+    delete data.password_hash;
+    delete data.token_recuperacion;
+    return data;
+  },
+
+  /**
+   * Autentica al usuario con email y contraseña.
+   * Retorna un JWT y datos básicos del usuario.
+   */
+  login: async ({ email, password }) => {
+    const usuario = await UsuarioRepository.findByEmail(email);
+    if (!usuario || !usuario.activo) {
+      throw new AppError(constants.MESSAGES.INVALID_CREDENTIALS, constants.HTTP.UNAUTHORIZED);
+    }
+
+    const isMatch = await compare(password, usuario.password_hash);
+    if (!isMatch) {
+      throw new AppError(constants.MESSAGES.INVALID_CREDENTIALS, constants.HTTP.UNAUTHORIZED);
+    }
+
+    await UsuarioRepository.updateLastAccess(usuario.id_usuario);
+
+    const token = generateToken({
+      id: usuario.id_usuario,
+      email: usuario.email,
+      nombre: usuario.nombre,
+      rol: usuario.rol || constants.ROLES.CLIENTE,
+    });
+
+    return {
+      token,
+      usuario: {
+        id: usuario.id_usuario,
+        nombre: usuario.nombre,
+        email: usuario.email,
+        rol: usuario.rol || constants.ROLES.CLIENTE,
+      },
+    };
+  },
+};
+
+module.exports = AuthService;
+</file>
+
+<file path="src/services/clase.service.js">
+'use strict';
+
+const ClaseRepository = require('../repositories/clase.repository');
+const AppError = require('../utils/AppError');
+const constants = require('../config/constants');
+const { getPagination, getPagingData } = require('../utils/pagination');
+const { Op } = require('sequelize');
+
+const ClaseService = {
+  getAll: async (query) => {
+    const { limit, offset, order, page } = getPagination(query);
+    const where = { activo: true };
+
+    if (query.search) {
+      where[Op.or] = [
+        { nombre: { [Op.iLike]: `%${query.search}%` } },
+        { descripcion: { [Op.iLike]: `%${query.search}%` } },
+      ];
+    }
+
+    const data = await ClaseRepository.findAndCount({ where, limit, offset, order });
+    return getPagingData(data, page, limit);
+  },
+
+  getById: async (id) => {
+    const clase = await ClaseRepository.findById(id);
+    if (!clase) throw new AppError(constants.MESSAGES.NOT_FOUND('Clase'), constants.HTTP.NOT_FOUND);
+    return clase;
+  },
+
+  create: (data) => ClaseRepository.create(data),
+
+  update: async (id, data) => {
+    const result = await ClaseRepository.update(id, data);
+    if (!result) throw new AppError(constants.MESSAGES.NOT_FOUND('Clase'), constants.HTTP.NOT_FOUND);
+    return result;
+  },
+
+  softDelete: async (id) => {
+    const result = await ClaseRepository.softDelete(id);
+    if (!result) throw new AppError(constants.MESSAGES.NOT_FOUND('Clase'), constants.HTTP.NOT_FOUND);
+    return { mensaje: constants.MESSAGES.DELETED('Clase') };
+  },
+
+  reactivate: async (id) => {
+    const result = await ClaseRepository.reactivate(id);
+    if (!result) throw new AppError(constants.MESSAGES.NOT_FOUND('Clase'), constants.HTTP.NOT_FOUND);
+    return { mensaje: constants.MESSAGES.REACTIVATED('Clase') };
+  },
+};
+
+module.exports = ClaseService;
+</file>
+
+<file path="src/services/horarioclase.service.js">
+'use strict';
+
+const HorarioClaseRepository = require('../repositories/horarioclase.repository');
+const AppError = require('../utils/AppError');
+const constants = require('../config/constants');
+const { getPagination, getPagingData } = require('../utils/pagination');
+
+const HorarioClaseService = {
+  getAll: async (query) => {
+    const { limit, offset, order, page } = getPagination(query);
+    const where = { activo: true };
+
+    if (query.dia_semana) {
+      where.dia_semana = query.dia_semana;
+    }
+    
+    if (query.id_clase) {
+      where.id_clase = query.id_clase;
+    }
+
+    const data = await HorarioClaseRepository.findAndCount({ where, limit, offset, order });
+    return getPagingData(data, page, limit);
+  },
+
+  getById: async (id) => {
+    const horario = await HorarioClaseRepository.findById(id);
+    if (!horario) throw new AppError(constants.MESSAGES.NOT_FOUND('Horario'), constants.HTTP.NOT_FOUND);
+    return horario;
+  },
+
+  getByClase: (id_clase) => HorarioClaseRepository.findByClase(id_clase),
+
+  create: (data) => HorarioClaseRepository.create(data),
+
+  update: async (id, data) => {
+    const result = await HorarioClaseRepository.update(id, data);
+    if (!result) throw new AppError(constants.MESSAGES.NOT_FOUND('Horario'), constants.HTTP.NOT_FOUND);
+    return result;
+  },
+
+  softDelete: async (id) => {
+    const result = await HorarioClaseRepository.softDelete(id);
+    if (!result) throw new AppError(constants.MESSAGES.NOT_FOUND('Horario'), constants.HTTP.NOT_FOUND);
+    return { mensaje: constants.MESSAGES.DELETED('Horario') };
+  },
+
+  reactivate: async (id) => {
+    const result = await HorarioClaseRepository.reactivate(id);
+    if (!result) throw new AppError(constants.MESSAGES.NOT_FOUND('Horario'), constants.HTTP.NOT_FOUND);
+    return { mensaje: constants.MESSAGES.REACTIVATED('Horario') };
+  },
+};
+
+module.exports = HorarioClaseService;
+</file>
+
+<file path="src/services/plan.service.js">
+'use strict';
+
+const PlanRepository = require('../repositories/plan.repository');
+const AppError = require('../utils/AppError');
+const constants = require('../config/constants');
+const { getPagination, getPagingData } = require('../utils/pagination');
+const { Op } = require('sequelize');
+
+const PlanService = {
+  getAll: async (query) => {
+    const { limit, offset, order, page } = getPagination(query);
+    const where = { activo: true };
+
+    if (query.search) {
+      where[Op.or] = [
+        { nombre: { [Op.iLike]: `%${query.search}%` } },
+        { descripcion: { [Op.iLike]: `%${query.search}%` } },
+      ];
+    }
+
+    if (query.destacado) {
+      where.destacado = query.destacado === 'true';
+    }
+
+    const data = await PlanRepository.findAndCount({ where, limit, offset, order });
+    return getPagingData(data, page, limit);
+  },
+
+  getById: async (id) => {
+    const plan = await PlanRepository.findById(id);
+    if (!plan) throw new AppError(constants.MESSAGES.NOT_FOUND('Plan'), constants.HTTP.NOT_FOUND);
+    return plan;
+  },
+
+  create: (data) => PlanRepository.create(data),
+
+  update: async (id, data) => {
+    const result = await PlanRepository.update(id, data);
+    if (!result) throw new AppError(constants.MESSAGES.NOT_FOUND('Plan'), constants.HTTP.NOT_FOUND);
+    return result;
+  },
+
+  softDelete: async (id) => {
+    const result = await PlanRepository.softDelete(id);
+    if (!result) throw new AppError(constants.MESSAGES.NOT_FOUND('Plan'), constants.HTTP.NOT_FOUND);
+    return { mensaje: constants.MESSAGES.DELETED('Plan') };
+  },
+
+  reactivate: async (id) => {
+    const result = await PlanRepository.reactivate(id);
+    if (!result) throw new AppError(constants.MESSAGES.NOT_FOUND('Plan'), constants.HTTP.NOT_FOUND);
+    return { mensaje: constants.MESSAGES.REACTIVATED('Plan') };
+  },
+};
+
+module.exports = PlanService;
+</file>
+
+<file path="src/services/promocion.service.js">
+'use strict';
+
+const PromocionRepository = require('../repositories/promocion.repository');
+const AppError = require('../utils/AppError');
+const constants = require('../config/constants');
+const { getPagination, getPagingData } = require('../utils/pagination');
+const { Op } = require('sequelize');
+
+const PromocionService = {
+  getAll: async (query) => {
+    const { limit, offset, order, page } = getPagination(query);
+    const where = { activo: true };
+
+    if (query.search) {
+      where[Op.or] = [
+        { nombre: { [Op.iLike]: `%${query.search}%` } },
+        { descripcion: { [Op.iLike]: `%${query.search}%` } },
+      ];
+    }
+
+    if (query.vigentes === 'true') {
+      where.fecha_caducacion = { [Op.gte]: new Date() };
+    }
+
+    const data = await PromocionRepository.findAndCount({ where, limit, offset, order });
+    return getPagingData(data, page, limit);
+  },
+
+  getVigentes: () => PromocionRepository.findVigentes(),
+
+  getById: async (id) => {
+    const promocion = await PromocionRepository.findById(id);
+    if (!promocion) throw new AppError(constants.MESSAGES.NOT_FOUND('Promoción'), constants.HTTP.NOT_FOUND);
+    return promocion;
+  },
+
+  create: (data) => PromocionRepository.create(data),
+
+  update: async (id, data) => {
+    const result = await PromocionRepository.update(id, data);
+    if (!result) throw new AppError(constants.MESSAGES.NOT_FOUND('Promoción'), constants.HTTP.NOT_FOUND);
+    return result;
+  },
+
+  softDelete: async (id) => {
+    const result = await PromocionRepository.softDelete(id);
+    if (!result) throw new AppError(constants.MESSAGES.NOT_FOUND('Promoción'), constants.HTTP.NOT_FOUND);
+    return { mensaje: constants.MESSAGES.DELETED('Promoción') };
+  },
+
+  reactivate: async (id) => {
+    const result = await PromocionRepository.reactivate(id);
+    if (!result) throw new AppError(constants.MESSAGES.NOT_FOUND('Promoción'), constants.HTTP.NOT_FOUND);
+    return { mensaje: constants.MESSAGES.REACTIVATED('Promoción') };
+  },
+};
+
+module.exports = PromocionService;
+</file>
+
+<file path="src/services/sede.service.js">
+'use strict';
+
+const SedeRepository = require('../repositories/sede.repository');
+const AppError = require('../utils/AppError');
+const constants = require('../config/constants');
+const { getPagination, getPagingData } = require('../utils/pagination');
+const { Op } = require('sequelize');
+
+const SedeService = {
+  getAll: async (query) => {
+    const { limit, offset, order, page } = getPagination(query);
+    const where = { activo: true };
+
+    if (query.search) {
+      where[Op.or] = [
+        { nombre: { [Op.iLike]: `%${query.search}%` } },
+        { direccion: { [Op.iLike]: `%${query.search}%` } },
+      ];
+    }
+
+    if (query.nombre) {
+      where.nombre = { [Op.iLike]: `%${query.nombre}%` };
+    }
+
+    const data = await SedeRepository.findAndCount({ where, limit, offset, order });
+    return getPagingData(data, page, limit);
+  },
+
+  getById: async (id) => {
+    const sede = await SedeRepository.findById(id);
+    if (!sede) throw new AppError(constants.MESSAGES.NOT_FOUND('Sede'), constants.HTTP.NOT_FOUND);
+    return sede;
+  },
+
+  create: (data) => SedeRepository.create(data),
+
+  update: async (id, data) => {
+    const sede = await SedeRepository.update(id, data);
+    if (!sede) throw new AppError(constants.MESSAGES.NOT_FOUND('Sede'), constants.HTTP.NOT_FOUND);
+    return sede;
+  },
+
+  softDelete: async (id) => {
+    const result = await SedeRepository.softDelete(id);
+    if (!result) throw new AppError(constants.MESSAGES.NOT_FOUND('Sede'), constants.HTTP.NOT_FOUND);
+    return { mensaje: constants.MESSAGES.DELETED('Sede') };
+  },
+
+  reactivate: async (id) => {
+    const result = await SedeRepository.reactivate(id);
+    if (!result) throw new AppError(constants.MESSAGES.NOT_FOUND('Sede'), constants.HTTP.NOT_FOUND);
+    return { mensaje: constants.MESSAGES.REACTIVATED('Sede') };
+  },
+};
+
+module.exports = SedeService;
+</file>
+
+<file path="src/services/usuario.service.js">
+'use strict';
+
+const UsuarioRepository = require('../repositories/usuario.repository');
+const { hash: hashPassword } = require('../utils/bcrypt');
+const AppError = require('../utils/AppError');
+const constants = require('../config/constants');
+const { getPagination, getPagingData } = require('../utils/pagination');
+const { Op } = require('sequelize');
+
+const UsuarioService = {
+  getAll: async (query) => {
+    const { limit, offset, order, page } = getPagination(query);
+    const where = { activo: true };
+
+    if (query.search) {
+      where[Op.or] = [
+        { nombre: { [Op.iLike]: `%${query.search}%` } },
+        { email: { [Op.iLike]: `%${query.search}%` } },
+      ];
+    }
+
+    if (query.rol) {
+      where.rol = query.rol;
+    }
+
+    const data = await UsuarioRepository.findAndCount({ where, limit, offset, order });
+    return getPagingData(data, page, limit);
+  },
+
+  getById: async (id) => {
+    const usuario = await UsuarioRepository.findById(id);
+    if (!usuario) throw new AppError(constants.MESSAGES.NOT_FOUND('Usuario'), constants.HTTP.NOT_FOUND);
+    return usuario;
+  },
+
+  create: async ({ nombre, email, password, telefono, rol }) => {
+    const existe = await UsuarioRepository.findByEmail(email);
+    if (existe) {
+      throw new AppError(constants.MESSAGES.ALREADY_EXISTS('email'), constants.HTTP.CONFLICT);
+    }
+    const password_hash = await hashPassword(password);
+    const usuario = await UsuarioRepository.create({
+      nombre,
+      email,
+      password_hash,
+      telefono,
+      rol: rol || 'Cliente',
+      activo: true,
+    });
+    const data = usuario.toJSON();
+    delete data.password_hash;
+    delete data.token_recuperacion;
+    return data;
+  },
+
+  update: async (id, body) => {
+    const data = { ...body };
+    if (data.password) {
+      data.password_hash = await hashPassword(data.password);
+      delete data.password;
+    }
+    const result = await UsuarioRepository.update(id, data);
+    if (!result) throw new AppError(constants.MESSAGES.NOT_FOUND('Usuario'), constants.HTTP.NOT_FOUND);
+    return result;
+  },
+
+  softDelete: async (id) => {
+    const result = await UsuarioRepository.softDelete(id);
+    if (!result) throw new AppError(constants.MESSAGES.NOT_FOUND('Usuario'), constants.HTTP.NOT_FOUND);
+    return { mensaje: constants.MESSAGES.DELETED('Usuario') };
+  },
+
+  reactivate: async (id) => {
+    const result = await UsuarioRepository.reactivate(id);
+    if (!result) throw new AppError(constants.MESSAGES.NOT_FOUND('Usuario'), constants.HTTP.NOT_FOUND);
+    return { mensaje: constants.MESSAGES.REACTIVATED('Usuario'), usuario: result };
+  },
+};
+
+module.exports = UsuarioService;
+</file>
+
+<file path="src/utils/AppError.js">
+'use strict';
+
+/**
+ * AppError — Clase de error personalizada del sistema.
+ * Permite distinguir errores operacionales (esperados) de bugs (inesperados).
+ */
+class AppError extends Error {
+  /**
+   * @param {string} message  - Mensaje legible por humanos
+   * @param {number} statusCode - Código HTTP asociado (400, 404, 401, etc.)
+   * @param {boolean} isOperational - true = error esperado del negocio
+   */
+  constructor(message, statusCode = 500, isOperational = true) {
+    super(message);
+    this.statusCode = statusCode;
+    this.isOperational = isOperational;
+    this.status = `${statusCode}`.startsWith('4') ? 'fail' : 'error';
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+module.exports = AppError;
+</file>
+
+<file path="src/utils/asyncHandler.js">
+'use strict';
+
+/**
+ * asyncHandler — Envuelve funciones controladoras asíncronas para interceptar
+ * errores y propagarlos automáticamente a `next(error)` sin usar try/catch repetitivos.
+ */
+const asyncHandler = (fn) => (req, res, next) => {
+  Promise.resolve(fn(req, res, next)).catch(next);
+};
+
+module.exports = asyncHandler;
+</file>
+
+<file path="src/utils/bcrypt.js">
+'use strict';
+
+const bcrypt = require('bcryptjs');
+const constants = require('../config/constants');
+
+const hash = async (plainText) => {
+  const salt = await bcrypt.genSalt(constants.SALT_ROUNDS || 10);
+  return bcrypt.hash(plainText, salt);
+};
+
+const compare = (plainText, hashedText) => {
+  return bcrypt.compare(plainText, hashedText);
+};
+
+module.exports = {
+  hash,
+  compare,
+};
+</file>
+
+<file path="src/utils/date.js">
+'use strict';
+
+/**
+ * Utilidades para manejo de fechas.
+ */
+const formatDate = (date) => {
+  if (!date) return null;
+  return new Date(date).toISOString().split('T')[0];
+};
+
+const isValidDate = (dateString) => {
+  const regEx = /^\d{4}-\d{2}-\d{2}$/;
+  if (!dateString.match(regEx)) return false; // Formato inválido
+  const d = new Date(dateString);
+  const dNum = d.getTime();
+  if (!dNum && dNum !== 0) return false; // NaN
+  return d.toISOString().slice(0, 10) === dateString;
+};
+
+const addDays = (date, days) => {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+};
+
+module.exports = {
+  formatDate,
+  isValidDate,
+  addDays,
+};
+</file>
+
+<file path="src/utils/jwt.js">
+'use strict';
+
+const jwt = require('jsonwebtoken');
+const env = require('../config/environment');
+const AppError = require('./AppError');
+const constants = require('../config/constants');
+
+const generateToken = (payload) => {
+  return jwt.sign(payload, env.jwt.secret, {
+    expiresIn: env.jwt.expiresIn,
+  });
+};
+
+const verifyToken = (token) => {
+  try {
+    return jwt.verify(token, env.jwt.secret);
+  } catch (err) {
+    if (err.name === 'TokenExpiredError') {
+      throw new AppError('Token expirado. Por favor inicia sesión nuevamente.', constants.HTTP.UNAUTHORIZED);
+    }
+    throw new AppError(constants.MESSAGES.UNAUTHORIZED, constants.HTTP.UNAUTHORIZED);
+  }
+};
+
+const extractBearerToken = (authHeader) => {
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    throw new AppError(constants.MESSAGES.UNAUTHORIZED, constants.HTTP.UNAUTHORIZED);
+  }
+  return authHeader.split(' ')[1];
+};
+
+module.exports = {
+  generateToken,
+  verifyToken,
+  extractBearerToken,
+};
+</file>
+
+<file path="src/utils/logger.js">
+'use strict';
+
+const winston = require('winston');
+const env = require('../config/environment');
+
+const levels = {
+  error: 0,
+  warn: 1,
+  info: 2,
+  http: 3,
+  debug: 4,
+};
+
+const colors = {
+  error: 'red',
+  warn: 'yellow',
+  info: 'green',
+  http: 'magenta',
+  debug: 'white',
+};
+
+winston.addColors(colors);
+
+const format = winston.format.combine(
+  winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
+  winston.format.colorize({ all: true }),
+  winston.format.printf(
+    (info) => `[${info.timestamp}] [${info.level}]: ${info.message}`
+  )
+);
+
+const transports = [
+  new winston.transports.Console(),
+];
+
+// Si no estamos en desarrollo, también loggear a archivos
+if (!env.isDevelopment) {
+  transports.push(
+    new winston.transports.File({
+      filename: 'logs/error.log',
+      level: 'error',
+    }),
+    new winston.transports.File({ filename: 'logs/combined.log' })
+  );
+}
+
+const logger = winston.createLogger({
+  level: env.isDevelopment ? 'debug' : 'info',
+  levels,
+  format,
+  transports,
+});
+
+// Stream para morgan (HTTP Logger)
+logger.stream = {
+  write: (message) => logger.http(message.trim()),
+};
+
+module.exports = logger;
+</file>
+
+<file path="src/utils/pagination.js">
+'use strict';
+
+/**
+ * Helper para paginación y ordenamiento dinámico en Sequelize.
+ */
+const getPagination = (query) => {
+  const page = parseInt(query.page, 10) > 0 ? parseInt(query.page, 10) : 1;
+  const limit = parseInt(query.limit, 10) > 0 ? parseInt(query.limit, 10) : 10;
+  const offset = (page - 1) * limit;
+
+  // Formato sort: "campo:asc" o "campo:desc" o simplemente "campo"
+  let order = [['id_sede', 'ASC']]; // Orden por defecto provisional
+  if (query.sort) {
+    const parts = query.sort.split(':');
+    const field = parts[0];
+    const direction = parts[1] && parts[1].toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+    order = [[field, direction]];
+  }
+
+  return { limit, offset, order, page };
+};
+
+const getPagingData = (data, page, limit) => {
+  const { count: totalItems, rows: items } = data;
+  const currentPage = page ? +page : 1;
+  const totalPages = Math.ceil(totalItems / limit);
+
+  return {
+    totalItems,
+    items,
+    totalPages,
+    currentPage,
+  };
+};
+
+module.exports = {
+  getPagination,
+  getPagingData,
+};
+</file>
+
+<file path="src/utils/response.js">
+'use strict';
+
+const sendSuccess = (res, data = null, message = 'Operación exitosa', statusCode = 200) => {
+  const response = {
+    success: true,
+    message,
+    data,
+  };
+  return res.status(statusCode).json(response);
+};
+
+const sendCreated = (res, data = null, message = 'Recurso creado exitosamente') => {
+  return sendSuccess(res, data, message, 201);
+};
+
+const sendError = (res, message = 'Ha ocurrido un error', statusCode = 500, errorDetails = null) => {
+  const response = {
+    success: false,
+    message,
+    error: errorDetails || { code: statusCode },
+  };
+  return res.status(statusCode).json(response);
+};
+
+module.exports = {
+  sendSuccess,
+  sendCreated,
+  sendError,
+};
+</file>
+
+<file path="src/validators/actividad.validator.js">
+'use strict';
+
+const create = (req) => {
+  const errors = [];
+  const { nombre, sede, horario } = req.body;
+  if (!nombre || nombre.trim().length < 2) errors.push('El nombre de la actividad es requerido');
+  if (!sede || sede.trim().length < 2) errors.push('La sede es requerida');
+  if (!horario) errors.push('El horario es requerido');
+  return errors;
+};
+
+const update = (req) => {
+  const errors = [];
+  if (req.body.nombre !== undefined && req.body.nombre.trim().length < 2)
+    errors.push('El nombre no puede estar vacío');
+  return errors;
+};
+
+module.exports = { create, update };
+</file>
+
+<file path="src/validators/auth.validator.js">
+'use strict';
+
+/**
+ * auth.validator.js
+ * Funciones validadoras para los endpoints de autenticación.
+ * Retornan un array de strings con los mensajes de error encontrados.
+ */
+
+const register = (req) => {
+  const errors = [];
+  const { nombre, email, password } = req.body;
+
+  if (!nombre || nombre.trim().length < 2) errors.push('El nombre debe tener al menos 2 caracteres');
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push('El email no es válido');
+  if (!password || password.length < 6) errors.push('La contraseña debe tener al menos 6 caracteres');
+
+  return errors;
+};
+
+const login = (req) => {
+  const errors = [];
+  const { email, password } = req.body;
+
+  if (!email) errors.push('El email es requerido');
+  if (!password) errors.push('La contraseña es requerida');
+
+  return errors;
+};
+
+module.exports = { register, login };
+</file>
+
+<file path="src/validators/clase.validator.js">
+'use strict';
+
+const create = (req) => {
+  const errors = [];
+  if (!req.body.nombre || req.body.nombre.trim().length < 2)
+    errors.push('El nombre de la clase es requerido');
+  return errors;
+};
+
+const update = (req) => {
+  const errors = [];
+  if (req.body.nombre !== undefined && req.body.nombre.trim().length < 2)
+    errors.push('El nombre no puede estar vacío');
+  return errors;
+};
+
+module.exports = { create, update };
+</file>
+
+<file path="src/validators/horarioclase.validator.js">
+'use strict';
+
+const DIAS_VALIDOS = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
+
+const create = (req) => {
+  const errors = [];
+  const { id_clase, dia_semana, hora_inicio, hora_fin } = req.body;
+  if (!id_clase) errors.push('El id_clase es requerido');
+  if (!dia_semana || !DIAS_VALIDOS.includes(dia_semana))
+    errors.push(`El dia_semana debe ser uno de: ${DIAS_VALIDOS.join(', ')}`);
+  if (!hora_inicio) errors.push('La hora_inicio es requerida');
+  if (!hora_fin) errors.push('La hora_fin es requerida');
+  return errors;
+};
+
+const update = (req) => {
+  const errors = [];
+  if (req.body.dia_semana && !DIAS_VALIDOS.includes(req.body.dia_semana))
+    errors.push(`El dia_semana debe ser uno de: ${DIAS_VALIDOS.join(', ')}`);
+  return errors;
+};
+
+module.exports = { create, update };
+</file>
+
+<file path="src/validators/plan.validator.js">
+'use strict';
+
+const create = (req) => {
+  const errors = [];
+  const { nombre, costo } = req.body;
+  if (!nombre || nombre.trim().length < 2) errors.push('El nombre del plan es requerido');
+  if (costo === undefined || costo === null || isNaN(Number(costo)) || Number(costo) < 0)
+    errors.push('El costo debe ser un número positivo');
+  return errors;
+};
+
+const update = (req) => {
+  const errors = [];
+  if (req.body.costo !== undefined && (isNaN(Number(req.body.costo)) || Number(req.body.costo) < 0))
+    errors.push('El costo debe ser un número positivo');
+  return errors;
+};
+
+module.exports = { create, update };
+</file>
+
+<file path="src/validators/promocion.validator.js">
+'use strict';
+
+const create = (req) => {
+  const errors = [];
+  const { nombre, descripcion, fecha_caducacion } = req.body;
+  
+  if (!nombre || nombre.trim().length < 2) errors.push('El nombre de la promoción es requerido (mínimo 2 caracteres)');
+  if (!descripcion || descripcion.trim().length < 5) errors.push('La descripción es requerida (mínimo 5 caracteres)');
+  if (!fecha_caducacion || isNaN(Date.parse(fecha_caducacion))) errors.push('La fecha de caducación es requerida y debe ser válida');
+  
+  return errors;
+};
+
+const update = (req) => {
+  const errors = [];
+  const { nombre, descripcion, fecha_caducacion } = req.body;
+  
+  if (nombre !== undefined && nombre.trim().length < 2) errors.push('El nombre debe tener al menos 2 caracteres');
+  if (descripcion !== undefined && descripcion.trim().length < 5) errors.push('La descripción debe tener al menos 5 caracteres');
+  if (fecha_caducacion !== undefined && isNaN(Date.parse(fecha_caducacion))) errors.push('La fecha de caducación debe ser válida');
+  
+  return errors;
+};
+
+module.exports = {
+  create,
+  update,
+};
+</file>
+
+<file path="src/validators/sede.validator.js">
+'use strict';
+
+const create = (req) => {
+  const errors = [];
+  const { nombre, direccion, horario_atencion } = req.body;
+  if (!nombre || nombre.trim().length < 2) errors.push('El nombre de la sede es requerido');
+  if (!direccion || direccion.trim().length < 5) errors.push('La dirección es requerida');
+  if (!horario_atencion) errors.push('El horario de atención es requerido');
+  return errors;
+};
+
+const update = (req) => {
+  const errors = [];
+  if (req.body.nombre !== undefined && req.body.nombre.trim().length < 2)
+    errors.push('El nombre no puede estar vacío');
+  return errors;
+};
+
+module.exports = { create, update };
+</file>
+
+<file path="src/validators/usuario.validator.js">
+'use strict';
+
+const create = (req) => {
+  const errors = [];
+  const { nombre, email, password } = req.body;
+  if (!nombre || nombre.trim().length < 2) errors.push('El nombre es requerido (mínimo 2 caracteres)');
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push('El email no es válido');
+  if (!password || password.length < 6) errors.push('La contraseña debe tener al menos 6 caracteres');
+  return errors;
+};
+
+const update = (req) => {
+  const errors = [];
+  if (req.body.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(req.body.email))
+    errors.push('El email no es válido');
+  if (req.body.password && req.body.password.length < 6)
+    errors.push('La contraseña debe tener al menos 6 caracteres');
+  return errors;
+};
+
+module.exports = { create, update };
+</file>
+
+</files>
