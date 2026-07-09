@@ -36,7 +36,7 @@ const UsuarioService = {
     return usuario;
   },
 
-  create: async ({ nombre, email, password, telefono, rol }) => {
+  create: async ({ nombre, email, password, telefono }) => {
     const existe = await UsuarioRepository.findByEmail(email);
     if (existe) {
       throw new AppError(constants.MESSAGES.ALREADY_EXISTS('email'), constants.HTTP.CONFLICT);
@@ -47,7 +47,6 @@ const UsuarioService = {
       email,
       password_hash,
       telefono,
-      rol: rol || 'Cliente',
       activo: true,
     });
     const data = usuario.toJSON();
