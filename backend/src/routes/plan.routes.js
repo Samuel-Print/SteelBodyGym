@@ -8,6 +8,7 @@ const PlanController = require('../controllers/plan.controller');
 const planValidator = require('../validators/plan.validator');
 
 router.get('/', PlanController.getAll);
+router.get('/stats', authenticate, PlanController.getStats);
 router.get('/:id', PlanController.getById);
 
 router.post('/', authenticate, validate(planValidator.create), PlanController.create);

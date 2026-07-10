@@ -47,6 +47,16 @@ const ClaseService = {
     if (!result) throw new AppError(constants.MESSAGES.NOT_FOUND('Clase'), constants.HTTP.NOT_FOUND);
     return { mensaje: constants.MESSAGES.REACTIVATED('Clase') };
   },
+
+  getStats: async () => {
+    const clasesSemanales = await ClaseRepository.countClasesSemanales();
+    const duracionMediaMinutos = await ClaseRepository.getDuracionMedia();
+    
+    return {
+      clasesSemanales,
+      duracionMediaMinutos
+    };
+  },
 };
 
 module.exports = ClaseService;

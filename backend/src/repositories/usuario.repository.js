@@ -108,6 +108,18 @@ const UsuarioRepository = {
       { password_hash, token_recuperacion: null, token_expira: null },
       { where: { id_usuario: id } }
     );
+  },
+
+  countTotal: () => {
+    return Usuario.count();
+  },
+
+  countActivos: () => {
+    return Usuario.count({ where: { activo: true } });
+  },
+
+  countInactivos: () => {
+    return Usuario.count({ where: { activo: false } });
   }
 };
 

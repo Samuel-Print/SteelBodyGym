@@ -51,6 +51,18 @@ const PlanService = {
     if (!result) throw new AppError(constants.MESSAGES.NOT_FOUND('Plan'), constants.HTTP.NOT_FOUND);
     return { mensaje: constants.MESSAGES.REACTIVATED('Plan') };
   },
+
+  getStats: async () => {
+    const planesActivos = await PlanRepository.countActivos();
+    const planMasLargo = await PlanRepository.findLongestPlan();
+    const planMasPopular = await PlanRepository.findMostPopularPlan();
+    
+    return {
+      planesActivos,
+      planMasLargo,
+      planMasPopular
+    };
+  },
 };
 
 module.exports = PlanService;

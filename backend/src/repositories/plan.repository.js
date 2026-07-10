@@ -45,6 +45,30 @@ const PlanRepository = {
     if (!plan) return null;
     return plan.update({ activo: true });
   },
+
+  countActivos: () => {
+    return Plan.count({ where: { activo: true } });
+  },
+
+  findLongestPlan: () => {
+    return Plan.findOne({
+      where: { activo: true },
+      order: [['tiempo_meses', 'DESC']],
+    });
+  },
+
+  findMostPopularPlan: () => {
+    // Como no hay modelo de suscripciones, retornamos el primer plan destacado por defecto
+    return Plan.findOne({
+      where: { activo: true, destacado: true },
+    }).then(plan => {
+      // Si no hay destacados, retornar el primero
+      if (!plan) {
+        return Plan.findOne({ where: { activo: true } });
+      }
+      return plan;
+    });
+  },
 };
 
 module.exports = PlanRepository;

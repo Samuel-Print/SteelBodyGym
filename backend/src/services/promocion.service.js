@@ -53,6 +53,18 @@ const PromocionService = {
     if (!result) throw new AppError(constants.MESSAGES.NOT_FOUND('Promoción'), constants.HTTP.NOT_FOUND);
     return { mensaje: constants.MESSAGES.REACTIVATED('Promoción') };
   },
+
+  getStats: async () => {
+    const total = await PromocionRepository.countTotal();
+    const vigentes = await PromocionRepository.countVigentes();
+    const prontasAVencer = await PromocionRepository.countProntasAVencer();
+    
+    return {
+      total,
+      vigentes,
+      prontasAVencer
+    };
+  },
 };
 
 module.exports = PromocionService;
