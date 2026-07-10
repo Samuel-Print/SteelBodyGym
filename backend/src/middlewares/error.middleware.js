@@ -8,6 +8,7 @@ const env = require('../config/environment');
 /**
  * Convierte errores conocidos de Sequelize a AppError con mensajes claros.
  */
+
 const handleSequelizeError = (err) => {
   if (err.name === 'SequelizeUniqueConstraintError') {
     const field = err.errors[0]?.path || 'campo';
@@ -30,6 +31,12 @@ const handleSequelizeError = (err) => {
  */
 // eslint-disable-next-line no-unused-vars
 const errorHandler = (err, req, res, next) => {
+  console.log(err.name);
+  console.log(err.message);
+  console.log(err.parent);
+  console.log(err.original);
+  console.log(err.sql);
+  
   // Intentar convertir errores Sequelize a AppError
   const sequelizeErr = handleSequelizeError(err);
   if (sequelizeErr) return errorHandler(sequelizeErr, req, res, next);

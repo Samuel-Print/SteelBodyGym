@@ -9,7 +9,7 @@ const getPagination = (query) => {
   const offset = (page - 1) * limit;
 
   // Formato sort: "campo:asc" o "campo:desc" o simplemente "campo"
-  let order = [['id_sede', 'ASC']]; // Orden por defecto provisional
+  let order = []; // Orden por defecto provisional
   if (query.sort) {
     const parts = query.sort.split(':');
     const field = parts[0];
