@@ -13,7 +13,7 @@ const { Op } = require('sequelize');
 const UsuarioService = {
   getAll: async (query) => {
     const { limit, offset, order, page } = getPagination(query);
-    const where = { activo: true };
+    const where = {};
 
     if (query.search) {
       where[Op.or] = [
