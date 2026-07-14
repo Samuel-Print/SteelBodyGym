@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import classService from '../api/classes.service';
 import horariosService from '../api/horarios.service';
@@ -24,6 +24,12 @@ const Classes = () => {
 
   const [selectedClass, setSelectedClass] = useState(null);
 
+  const [stats, setStats] = useState({
+    clasesSemanales: 0,
+    duracionMediaMinutos: 0,
+  });
+  const [statsLoading, setStatsLoading] = useState(true);
+
   const {
     classes,
     loading,
@@ -31,10 +37,43 @@ const Classes = () => {
     loadClasses,
   } = useClasses();
 
-  const stats = [
-    { value: '—', label: 'Clases activas' },
-    { value: '—', label: 'Horarios semanales' },
-    { value: '—', label: 'Más popular' },
+  const loadStats = async () => {
+    try {
+      setStatsLoading(true);
+      const data = await classService.getStats();
+      setStats({
+        clasesSemanales: data?.clasesSemanales ?? 0,
+        duracionMediaMinutos: data?.duracionMediaMinutos ?? 0,
+      });
+    } catch (error) {
+      console.error('Error al cargar las estadísticas de clases:', error);
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  // "Clases activas" no viene en el endpoint de stats (solo devuelve
+  // clasesSemanales y duracionMediaMinutos), así que usamos el total
+  // de la lista paginada, que ya filtra por activo: true.
+  const statsCards = [
+    {
+      value: loading ? '—' : pagination?.totalItems ?? classes.length,
+      label: 'Clases activas',
+    },
+    {
+      value: statsLoading ? '—' : stats.clasesSemanales,
+      label: 'Horarios semanales',
+    },
+    {
+      value: statsLoading
+        ? '—'
+        : `${Math.round(stats.duracionMediaMinutos)} min`,
+      label: 'Duración media',
+    },
   ];
 
   const handleCreate = () => {
@@ -59,6 +98,7 @@ const Classes = () => {
       );
 
       await loadClasses();
+      await loadStats();
       setShowCreate(false);
     } catch (error) {
       console.error('Error al crear la clase:', error);
@@ -95,6 +135,7 @@ const Classes = () => {
       ]);
 
       await loadClasses();
+      await loadStats();
       setShowEdit(false);
       setSelectedClass(null);
     } catch (error) {
@@ -125,6 +166,7 @@ const Classes = () => {
         await classService.reactivate(selectedClass.id_clase);
       }
       await loadClasses();
+      await loadStats();
       setShowDisable(false);
       setShowEnable(false);
       setSelectedClass(null);
@@ -176,7 +218,7 @@ const Classes = () => {
         />
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-7">
-          {stats.map((stat, index) => (
+          {statsCards.map((stat, index) => (
             <StatsCard
               key={index}
               value={stat.value}

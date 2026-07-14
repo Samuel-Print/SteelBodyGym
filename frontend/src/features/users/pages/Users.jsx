@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import userService from "../api/user.service";
 import PageHeader from "@/components/ui/PageHeader";
@@ -25,6 +25,13 @@ const Users = () => {
 
   const [selectedUser, setSelectedUser] = useState(null);
 
+  const [stats, setStats] = useState({
+    total: 0,
+    activos: 0,
+    inactivos: 0,
+  });
+  const [statsLoading, setStatsLoading] = useState(true);
+
   const {
     users,
     loading,
@@ -32,11 +39,30 @@ const Users = () => {
     loadUsers,
   } = useUsers();
 
-  const stats = [
-    { value: users.length, label: 'Usuarios totales' },
-    { value: '318', label: 'Activos' },
-    { value: '+28', label: 'Nuevos este mes' },
-    { value: '24', label: 'Inactivos' },
+  const loadStats = async () => {
+    try {
+      setStatsLoading(true);
+      const data = await userService.getStats();
+      setStats({
+        total: data?.total ?? 0,
+        activos: data?.activos ?? 0,
+        inactivos: data?.inactivos ?? 0,
+      });
+    } catch (error) {
+      console.error('Error al cargar las estadísticas de usuarios:', error);
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  const statsCards = [
+    { value: statsLoading ? '—' : stats.total, label: 'Usuarios totales' },
+    { value: statsLoading ? '—' : stats.activos, label: 'Activos' },
+    { value: statsLoading ? '—' : stats.inactivos, label: 'Inactivos' },
   ];
 
   const handleCreate = () => {
@@ -48,6 +74,7 @@ const Users = () => {
     try {
       await userService.create(usuario);
       await loadUsers();
+      await loadStats();
       setShowCreate(false);
     } catch (error) {
       console.error('Error al crear el usuario:', error);
@@ -63,6 +90,7 @@ const Users = () => {
     try {
       await userService.update(usuario.id_usuario, usuario);
       await loadUsers();
+      await loadStats();
       setShowEdit(false);
       setSelectedUser(null);
     } catch (error) {
@@ -88,6 +116,7 @@ const Users = () => {
         await userService.reactivate(selectedUser.id_usuario);
       }
       await loadUsers();
+      await loadStats();
       setShowDisable(false);
       setShowEnable(false);
       setSelectedUser(null);
@@ -134,8 +163,8 @@ const Users = () => {
           }
         />
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-7">
-          {stats.map((stat, index) => (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-7">
+          {statsCards.map((stat, index) => (
             <StatsCard
               key={index}
               value={stat.value}

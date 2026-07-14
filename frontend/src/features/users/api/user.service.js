@@ -30,6 +30,11 @@ const reactivate = async (id) => {
   return data;
 };
 
+const getStats = async () => {
+  const { data } = await api.get('/usuarios/stats');
+  return data.data;
+};
+
 export default {
   getAll,
   getById,
@@ -37,4 +42,5 @@ export default {
   update,
   remove,
   reactivate,
+  getStats,
 };

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import promotionService from '../api/promotion.service';
 import usePromotions from '../hooks/usePromotions';
@@ -25,12 +25,39 @@ const Promotions = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('');
 
+    const [stats, setStats] = useState({
+        total: 0,
+        vigentes: 0,
+        prontasAVencer: 0,
+    });
+    const [statsLoading, setStatsLoading] = useState(true);
+
     const {
         promotions,
         loading,
         pagination,
         loadPromotions,
     } = usePromotions();
+
+    const loadStats = async () => {
+        try {
+            setStatsLoading(true);
+            const data = await promotionService.getStats();
+            setStats({
+                total: data?.total ?? 0,
+                vigentes: data?.vigentes ?? 0,
+                prontasAVencer: data?.prontasAVencer ?? 0,
+            });
+        } catch (error) {
+            console.error('Error al cargar las estadísticas de promociones:', error);
+        } finally {
+            setStatsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadStats();
+    }, []);
 
     const getBadgeClass = (badge) => {
         switch (badge) {
@@ -48,11 +75,10 @@ const Promotions = () => {
         }
     };
 
-  const stats = [
-    { value: '12', label: 'Promociones totales' },
-    { value: '8', label: 'Vigentes' },
-    { value: '3', label: 'Por vencer' },
-    { value: '+24%', label: 'Conversión' },
+  const statsCards = [
+    { value: statsLoading ? '—' : stats.total, label: 'Promociones totales' },
+    { value: statsLoading ? '—' : stats.vigentes, label: 'Vigentes' },
+    { value: statsLoading ? '—' : stats.prontasAVencer, label: 'Por vencer' },
   ];
 
   const handleCreate = () => {
@@ -64,6 +90,7 @@ const Promotions = () => {
         try {
             await promotionService.create(promotion);
             await loadPromotions();
+            await loadStats();
             setShowCreate(false);
         } catch (error) {
             console.error('Error al crear la promoción:', error);
@@ -76,8 +103,9 @@ const Promotions = () => {
             // Usamos el método update del service con el ID y los datos
             await promotionService.update(promotion.id_promocion, promotion);
             
-            // Recargar la lista de promociones
+            // Recargar la lista de promociones y las estadísticas
             await loadPromotions();
+            await loadStats();
             
             // Cerrar el modal y limpiar selección
             setShowEdit(false);
@@ -107,6 +135,7 @@ const Promotions = () => {
     try {
       await promotionService.update(selectedPromo.id_promocion, { activo: !selectedPromo.activo });
       await loadPromotions();
+      await loadStats();
       setShowDisable(false);
       setShowEnable(false);
       setSelectedPromo(null);
@@ -185,8 +214,8 @@ const Promotions = () => {
           }
       />
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-7">
-          {stats.map((stat, index) => (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-7">
+          {statsCards.map((stat, index) => (
             <StatsCard
               key={index}
               value={stat.value}

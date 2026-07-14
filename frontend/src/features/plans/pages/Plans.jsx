@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import planService from '../api/plans.service';
 import usePlans from '../hooks/usePlans';
@@ -23,6 +23,13 @@ const Plans = () => {
 
   const [selectedPlan, setSelectedPlan] = useState(null);
 
+  const [stats, setStats] = useState({
+    planesActivos: 0,
+    planMasPopular: null,
+    planMasLargo: null,
+  });
+  const [statsLoading, setStatsLoading] = useState(true);
+
   const {
     plans,
     loading,
@@ -30,10 +37,52 @@ const Plans = () => {
     loadPlans,
   } = usePlans();
 
-  const stats = [
-    { value: '—', label: 'Planes activos' },
-    { value: '—', label: 'Plan más popular' },
-    { value: '—', label: 'Plan más largo' },
+  const loadStats = async () => {
+    try {
+      setStatsLoading(true);
+      const data = await planService.getStats();
+      setStats({
+        planesActivos: data?.planesActivos ?? 0,
+        planMasPopular: data?.planMasPopular ?? null,
+        planMasLargo: data?.planMasLargo ?? null,
+      });
+    } catch (error) {
+      console.error('Error al cargar las estadísticas de planes:', error);
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  const formatTiempo = (meses) => {
+    const value = Number(meses);
+    if (value >= 1) return `${value} ${value === 1 ? 'mes' : 'meses'}`;
+    const dias = Math.round(value * 30);
+    return `${dias} día${dias === 1 ? '' : 's'}`;
+  };
+
+  const statsCards = [
+    {
+      value: statsLoading ? '—' : stats.planesActivos,
+      label: 'Planes activos',
+    },
+    {
+      value: statsLoading
+        ? '—'
+        : stats.planMasPopular?.nombre ?? 'Sin datos',
+      label: 'Plan más popular',
+    },
+    {
+      value: statsLoading
+        ? '—'
+        : stats.planMasLargo
+          ? `${stats.planMasLargo.nombre} · ${formatTiempo(stats.planMasLargo.tiempo_meses)}`
+          : 'Sin datos',
+      label: 'Plan más largo',
+    },
   ];
 
   const handleCreate = () => {
@@ -45,6 +94,7 @@ const Plans = () => {
     try {
       await planService.create(plan);
       await loadPlans();
+      await loadStats();
       setShowCreate(false);
     } catch (error) {
       console.error('Error al crear el plan:', error);
@@ -55,6 +105,7 @@ const Plans = () => {
     try {
       await planService.update(plan.id_plan, plan);
       await loadPlans();
+      await loadStats();
       setShowEdit(false);
       setSelectedPlan(null);
     } catch (error) {
@@ -85,6 +136,7 @@ const Plans = () => {
         await planService.reactivate(selectedPlan.id_plan);
       }
       await loadPlans();
+      await loadStats();
       setShowDisable(false);
       setShowEnable(false);
       setSelectedPlan(null);
@@ -105,13 +157,6 @@ const Plans = () => {
       currency: 'COP',
       minimumFractionDigits: 0,
     }).format(value);
-
-  const formatTiempo = (meses) => {
-    const value = Number(meses);
-    if (value >= 1) return `${value} ${value === 1 ? 'mes' : 'meses'}`;
-    const dias = Math.round(value * 30);
-    return `${dias} día${dias === 1 ? '' : 's'}`;
-  };
 
   const statsIcons = [
     <svg key="0" className="w-6 h-6 stroke-current fill-none stroke-[2.2] stroke-linecap-round stroke-linejoin-round" viewBox="0 0 24 24">
@@ -150,7 +195,7 @@ const Plans = () => {
         />
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-7">
-          {stats.map((stat, index) => (
+          {statsCards.map((stat, index) => (
             <StatsCard
               key={index}
               value={stat.value}

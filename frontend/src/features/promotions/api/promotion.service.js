@@ -25,10 +25,16 @@ const remove = async (id) => {
   return data;
 };
 
+const getStats = async () => {
+  const { data } = await api.get('/promociones/stats');
+  return data.data;
+};
+
 export default {
   getAll,
   getById,
   create,
   update,
   remove,
+  getStats,
 };
