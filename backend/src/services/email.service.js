@@ -13,51 +13,63 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+const buildRecoveryHtml = (resetUrl) => `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <style>
+      body { font-family: Arial, sans-serif; }
+      .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+      .btn {
+        display: inline-block;
+        padding: 12px 24px;
+        background-color: #dc3545;
+        color: white !important;
+        text-decoration: none;
+        border-radius: 5px;
+        margin: 20px 0;
+      }
+      .footer { color: #666; font-size: 12px; margin-top: 30px; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Recuperación de contraseña</h1>
+      <p>Hola, recibimos una solicitud para restablecer tu contraseña.</p>
+      <p>Haz clic en el siguiente enlace para crear una nueva contraseña:</p>
+      <a href="${resetUrl}" class="btn">Restablecer contraseña</a>
+      <p>Este enlace expirará en <strong>1 hora</strong>.</p>
+      <p>Si no solicitaste este cambio, ignora este mensaje.</p>
+      <div class="footer">
+        <p>Steel Body Gym - Todos los derechos reservados</p>
+      </div>
+    </div>
+  </body>
+  </html>
+`;
+
 const EmailService = {
   sendRecoveryEmail: async (email, token) => {
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
-    
+    const resetUrl = `${process.env.FRONTEND_URL}/resetear-password?token=${token}`;
+
     const mailOptions = {
       from: process.env.SMTP_USER,
       to: email,
       subject: 'Recuperación de contraseña - Steel Body Gym',
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <style>
-            body { font-family: Arial, sans-serif; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .btn { 
-              display: inline-block;
-              padding: 12px 24px;
-              background-color: #dc3545;
-              color: white !important;
-              text-decoration: none;
-              border-radius: 5px;
-              margin: 20px 0;
-            }
-            .footer { color: #666; font-size: 12px; margin-top: 30px; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <h1>Recuperación de contraseña</h1>
-            <p>Hola, recibimos una solicitud para restablecer tu contraseña.</p>
-            <p>Haz clic en el siguiente enlace para crear una nueva contraseña:</p>
-            <a href="${resetUrl}" class="btn">Restablecer contraseña</a>
-            <p>Este enlace expirará en <strong>1 hora</strong>.</p>
-            <p>Si no solicitaste este cambio, ignora este mensaje.</p>
-            <div class="footer">
-              <p>Steel Body Gym - Todos los derechos reservados</p>
-            </div>
-          </div>
-        </body>
-        </html>
-      `
+      html: buildRecoveryHtml(resetUrl),
     };
-    
+
     return transporter.sendMail(mailOptions);
+  },
+
+  sendRecoveryEmailDev: async (email, token) => {
+    const resetUrl = `${process.env.FRONTEND_URL}/resetear-password?token=${token}`;
+
+    console.log('\n📧 [DEV] Recuperación de contraseña');
+    console.log(`   Para: ${email}`);
+    console.log(`   Link: ${resetUrl}\n`);
+
+    return { mensaje: 'Email simulado en consola (modo desarrollo)', resetUrl };
   },
 
 };
