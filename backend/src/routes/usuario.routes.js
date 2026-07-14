@@ -7,6 +7,11 @@ const authenticate = require('../middlewares/auth.middleware');
 const validate = require('../middlewares/validation.middleware');
 const usuarioValidator = require('../validators/usuario.validator');
 
+// Rutas públicas de recuperación de contraseña (deben ir ANTES de las rutas con :id)
+router.post('/solicitar-recuperacion', UsuarioController.solicitarRecuperacion);
+router.get('/verificar-token/:token', UsuarioController.verificarToken);
+router.put('/resetear-password', UsuarioController.resetearPassword);
+
 // Rutas de administración de usuarios
 router.get('/', authenticate, UsuarioController.getAll);
 router.get('/stats', authenticate, UsuarioController.getStats);
@@ -26,8 +31,5 @@ router.put(
 );
 router.delete('/:id', authenticate, UsuarioController.softDelete);
 router.put('/:id/reactivar', authenticate, UsuarioController.reactivate);
-router.post('/solicitar-recuperacion', UsuarioController.solicitarRecuperacion);
-router.get('/verificar-token/:token', UsuarioController.verificarToken);
-router.put('/resetear-password', UsuarioController.resetearPassword);
 
 module.exports = router;
