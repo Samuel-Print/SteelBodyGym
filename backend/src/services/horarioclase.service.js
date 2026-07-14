@@ -8,7 +8,7 @@ const { getPagination, getPagingData } = require('../utils/pagination');
 const HorarioClaseService = {
   getAll: async (query) => {
     const { limit, offset, order, page } = getPagination(query);
-    const where = { activo: true };
+    const where = {};
 
     if (query.dia_semana) {
       where.dia_semana = query.dia_semana;
