@@ -14,7 +14,6 @@ const PromocionRepository = {
 
   findAll: () => {
     return Promocion.findAll({
-      where: { activo: true },
       order: [['fecha_caducacion', 'ASC']],
     });
   },

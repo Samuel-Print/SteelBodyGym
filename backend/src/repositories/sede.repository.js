@@ -13,7 +13,7 @@ const SedeRepository = {
   },
 
   findAll: () => {
-    return Sede.findAll({ where: { activo: true }, order: [['id_sede', 'ASC']] });
+    return Sede.findAll({ order: [['id_sede', 'ASC']] });
   },
 
   findById: (id) => {

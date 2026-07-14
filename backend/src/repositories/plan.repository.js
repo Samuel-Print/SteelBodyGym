@@ -13,7 +13,7 @@ const PlanRepository = {
   },
 
   findAll: () => {
-    return Plan.findAll({ where: { activo: true }, order: [['orden_display', 'ASC'], ['id_plan', 'ASC']] });
+    return Plan.findAll({ order: [['orden_display', 'ASC'], ['id_plan', 'ASC']] });
   },
 
   findAllIncludeInactive: () => {

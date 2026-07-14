@@ -18,7 +18,6 @@ const UsuarioRepository = {
 
   findAll: () => {
     return Usuario.findAll({
-      where: { activo: true },
       order: [['id_usuario', 'ASC']],
       attributes: SAFE_ATTRS,
     });
