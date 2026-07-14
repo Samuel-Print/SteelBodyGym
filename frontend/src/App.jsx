@@ -7,6 +7,18 @@ import api from "@/api/axios";
 
 console.log(api.defaults.baseURL);
 
+
+const toastStyle = {
+  background: 'var(--background)',
+  color: 'var(--text)',
+  border: '1px solid var(--border)',
+  borderRadius: '14px',
+  padding: '12px 16px',
+  fontSize: '14px',
+  fontWeight: 500,
+  boxShadow: '0 10px 30px rgba(0,0,0,.15)',
+};
+
 function App() {
   return (
     <BrowserRouter>
@@ -15,11 +27,10 @@ function App() {
         position="top-right"
         toastOptions={{
           duration: 4000,
-          style: {
-            background: '#1e293b',
-            color: '#fff',
-            borderRadius: '14px',
-          }
+          style: toastStyle,
+          success: { style: toastStyle },
+          error: { style: toastStyle },
+          loading: { style: toastStyle },
         }}
       />
     </BrowserRouter>

@@ -1,82 +1,52 @@
 import { useState } from 'react';
-import AdminHeader from '../../../components/layout/AdminHeader';
-import AdminFooter from '../../../components/layout/AdminFooter';
+
+import promotionService from '../api/promotion.service';
+import usePromotions from '../hooks/usePromotions';
 import PageHeader from "@/components/ui/PageHeader";
 
 import PromotionCreateModal from '../../../features/promotions/components/CreatePromotionModal';
-import PromotionDeleteModal from '../../../features/promotions/components/DeletePromotionDialog';
 import PromotionEditModal from '../../../features/promotions/components/EditPromotionModal';
+import DisablePromotionModal from '../../../features/promotions/components/DisablePromotionModal';
+import EnablePromotionModal from '../../../features/promotions/components/EnablePromotionModal';
 
 import {
   Button,
-  SearchBar,
-  Select,
   StatsCard,
+  Pagination,
 } from '../../../components/ui';
 
 const Promotions = () => {
     const [showCreate, setShowCreate] = useState(false);
     const [showEdit, setShowEdit] = useState(false);
-    const [showConfirm, setShowConfirm] = useState(false);
+    const [showDisable, setShowDisable] = useState(false);
+    const [showEnable, setShowEnable] = useState(false);
 
-  const [selectedPromo, setSelectedPromo] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
+    const [selectedPromo, setSelectedPromo] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterStatus, setFilterStatus] = useState('');
 
-  // Datos de ejemplo
-  const [promotions, setPromotions] = useState([
-    {
-      id: 1,
-      name: '2x1 Plan Mensual',
-      description: 'Trae a un amigo y ambos pagan un solo mes.',
-      expiration: '2026-06-30',
-      status: 'Vigente',
-      badge: 'green',
-    },
-    {
-      id: 2,
-      name: 'Descuento Estudiante',
-      description:
-        '20% de descuento en cualquier plan presentando carnet.',
-      expiration: '2026-12-15',
-      status: 'Vigente',
-      badge: 'green',
-    },
-    {
-      id: 3,
-      name: 'Plan Año -30%',
-      description:
-        'Ahorra 30% pagando el plan anual por adelantado.',
-      expiration: '2026-07-10',
-      status: 'Por vencer',
-      badge: 'amber',
-    },
-    {
-      id: 4,
-      name: 'Verano Fit',
-      description:
-        'Inscripción sin matrícula durante el verano.',
-      expiration: '2026-02-28',
-      status: 'Caducada',
-      badge: 'red',
-    },
-  ]);
+    const {
+        promotions,
+        loading,
+        pagination,
+        loadPromotions,
+    } = usePromotions();
 
-  const getBadgeClass = (badge) => {
-  switch (badge) {
-    case 'green':
-      return 'bg-green-100 text-green-700';
+    const getBadgeClass = (badge) => {
+        switch (badge) {
+            case 'green':
+            return 'bg-green-100 text-green-700';
 
-    case 'amber':
-      return 'bg-amber-100 text-amber-700';
+            case 'amber':
+            return 'bg-amber-100 text-amber-700';
 
-    case 'red':
-      return 'bg-red-100 text-red-700';
+            case 'red':
+            return 'bg-red-100 text-red-700';
 
-    default:
-      return 'bg-gray-100 text-gray-700';
-  }
-};
+            default:
+            return 'bg-gray-100 text-gray-700';
+        }
+    };
 
   const stats = [
     { value: '12', label: 'Promociones totales' },
@@ -90,27 +60,70 @@ const Promotions = () => {
     setShowCreate(true);
   };
 
+  const handleSavePromotion = async (promotion) => {
+        try {
+            await promotionService.create(promotion);
+            await loadPromotions();
+            setShowCreate(false);
+        } catch (error) {
+            console.error('Error al crear la promoción:', error);
+        }
+    };
+
+  // Función para actualizar promoción
+  const handleUpdatePromotion = async (promotion) => {
+        try {
+            // Usamos el método update del service con el ID y los datos
+            await promotionService.update(promotion.id_promocion, promotion);
+            
+            // Recargar la lista de promociones
+            await loadPromotions();
+            
+            // Cerrar el modal y limpiar selección
+            setShowEdit(false);
+            setSelectedPromo(null);
+        } catch (error) {
+            console.error('Error al actualizar la promoción:', error);
+            // Aquí podrías mostrar un mensaje de error al usuario
+            alert('Error al actualizar la promoción. Por favor, intenta de nuevo.');
+        }
+    };
+
   const handleEdit = (promo) => {
     setSelectedPromo(promo);
     setShowEdit(true);
   };
 
-  const handleDelete = (promo) => {
+  const handleToggleActive = (promo) => {
     setSelectedPromo(promo);
-    setShowConfirm(true);
+    if (promo.activo) {
+      setShowDisable(true);
+    } else {
+      setShowEnable(true);
+    }
   };
 
-  const confirmDelete = () => {
-    setPromotions(
-      promotions.filter((p) => p.id !== selectedPromo.id)
-    );
+  const confirmToggleActive = async () => {
+    try {
+      await promotionService.update(selectedPromo.id_promocion, { activo: !selectedPromo.activo });
+      await loadPromotions();
+      setShowDisable(false);
+      setShowEnable(false);
+      setSelectedPromo(null);
+    } catch (error) {
+      console.error('Error al cambiar el estado de la promoción:', error);
+      alert('Error al cambiar el estado de la promoción. Por favor, intenta de nuevo.');
+    }
+  };
 
-    setShowConfirm(false);
-    setSelectedPromo(null);
+  const handlePageChange = (newPage) => {
+    if (newPage < 1 || newPage > pagination.totalPages) return;
+    loadPromotions(newPage);
   };
 
   const statsIcons = [
     <svg
+      key="stat-icon-target"
       className="w-6 h-6 stroke-current fill-none stroke-[2.2] stroke-linecap-round stroke-linejoin-round"
       viewBox="0 0 24 24"
     >
@@ -118,6 +131,7 @@ const Promotions = () => {
     </svg>,
 
     <svg
+      key="stat-icon-check"
       className="w-6 h-6 stroke-current fill-none stroke-[2.2] stroke-linecap-round stroke-linejoin-round"
       viewBox="0 0 24 24"
     >
@@ -125,6 +139,7 @@ const Promotions = () => {
     </svg>,
 
     <svg
+      key="stat-icon-alert"
       className="w-6 h-6 stroke-current fill-none stroke-[2.2] stroke-linecap-round stroke-linejoin-round"
       viewBox="0 0 24 24"
     >
@@ -133,6 +148,7 @@ const Promotions = () => {
     </svg>,
 
     <svg
+      key="stat-icon-trend"
       className="w-6 h-6 stroke-current fill-none stroke-[2.2] stroke-linecap-round stroke-linejoin-round"
       viewBox="0 0 24 24"
     >
@@ -143,7 +159,6 @@ const Promotions = () => {
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
-      <AdminHeader />
 
       <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-20">
 
@@ -213,38 +228,36 @@ const Promotions = () => {
             <tbody>
               {promotions.map((promo) => (
                 <tr
-                  key={promo.id}
+                  key={promo.id_promocion}
                   className="hover:bg-[var(--surface-2)] transition"
                 >
                   <td className="px-5 py-[15px] border-b border-[var(--border)] text-sm">
                     <div className="flex items-center gap-3">
                       <div className="w-[38px] h-[38px] rounded-[10px] bg-[var(--info-bg)] text-[var(--primary-light)] flex items-center justify-center font-bold text-[13px] flex-shrink-0">
-                        {promo.name.substring(0, 2).toUpperCase()}
+                        {promo.nombre.substring(0, 2).toUpperCase()}
                       </div>
 
                       <div>
                         <div className="font-bold text-[var(--text)]">
-                          {promo.name}
+                          {promo.nombre}
                         </div>
 
-                        <div className="text-[12.5px] text-[var(--muted)]">
-                          Promoción de temporada
-                        </div>
                       </div>
                     </div>
                   </td>
 
                   <td className="px-5 py-[15px] border-b border-[var(--border)] text-sm text-[var(--muted)]">
-                    {promo.description}
+                    {promo.descripcion}
                   </td>
 
                   <td className="px-5 py-[15px] border-b border-[var(--border)] text-sm">
 
                     <div className="text-[15px] text-[var(--muted)] mt-1">
-                      {new Date(promo.expiration).toLocaleDateString('es-CO', {
+                      {new Date(promo.fecha_caducacion).toLocaleDateString('es-CO', {
                         day: '2-digit',
                         month: 'short',
                         year: 'numeric',
+                        timeZone: 'UTC',
                       })}
                     </div>
                   </td>
@@ -266,19 +279,23 @@ const Promotions = () => {
                         </svg>
                       </button>
 
-                      {/* Eliminar */}
+                      {/* Habilitar / Deshabilitar */}
                       <button
-                        onClick={() => handleDelete(promo)}
-                        className="w-[34px] h-[34px] rounded-[9px] border border-[var(--border)] bg-[var(--card)] flex items-center justify-center text-[var(--muted)] hover:bg-[var(--danger-bg)] hover:text-[var(--danger)] hover:border-[var(--danger)] transition"
+                        onClick={() => handleToggleActive(promo)}
+                        role="switch"
+                        aria-checked={promo.activo}
+                        title={promo.activo ? 'Deshabilitar promoción' : 'Habilitar promoción'}
+                        className={`relative inline-flex h-[22px] w-[40px] items-center rounded-full border transition-colors duration-200 flex-shrink-0 ${
+                          promo.activo
+                            ? 'bg-[var(--accent)] border-[var(--accent)]'
+                            : 'bg-[var(--surface-2)] border-[var(--border)]'
+                        }`}
                       >
-                        <svg
-                          className="w-4 h-4 stroke-current fill-none stroke-2"
-                          viewBox="0 0 24 24"
-                        >
-                          <path d="M3 6h18" />
-                          <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6" />
-                          <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2" />
-                        </svg>
+                        <span
+                          className={`inline-block h-[16px] w-[16px] transform rounded-full bg-[var(--card)] shadow transition-transform duration-200 ${
+                            promo.activo ? 'translate-x-[19px]' : 'translate-x-[2px]'
+                          }`}
+                        />
                       </button>
 
                     </div>
@@ -289,15 +306,18 @@ const Promotions = () => {
 
           </table>
 
-          <div className="flex items-center justify-between px-5 py-3.5 border-t border-[var(--border)] text-[13px] text-[var(--muted)]">
-            <span>
-              Mostrando {promotions.length} de {promotions.length} promociones
-            </span>
+          <div className="px-5 py-3.5 border-t border-[var(--border)]">
+            <Pagination
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              onPageChange={handlePageChange}
+              itemsCount={promotions.length}
+              totalItems={pagination.totalItems}
+              label="promociones"
+            />
           </div>
         </div>
       </main>
-
-      <AdminFooter />
 
       <PromotionCreateModal
         open={showCreate}
@@ -305,17 +325,27 @@ const Promotions = () => {
           setShowCreate(false);
           setSelectedPromo(null);
         }}
-        promotion={selectedPromo}
+        onSave={handleSavePromotion}
       />
 
-      <PromotionDeleteModal
-        open={showConfirm}
+      <DisablePromotionModal
+        open={showDisable}
         onClose={() => {
-          setShowConfirm(false);
+          setShowDisable(false);
           setSelectedPromo(null);
         }}
         promotion={selectedPromo}
-        onConfirm={confirmDelete}
+        onConfirm={confirmToggleActive}
+      />
+
+      <EnablePromotionModal
+        open={showEnable}
+        onClose={() => {
+          setShowEnable(false);
+          setSelectedPromo(null);
+        }}
+        promotion={selectedPromo}
+        onConfirm={confirmToggleActive}
       />
 
       <PromotionEditModal 
@@ -325,6 +355,7 @@ const Promotions = () => {
           setSelectedPromo(null);
         }}
         promotion={selectedPromo}
+        onSave={handleUpdatePromotion}
       />
     </div>
   );

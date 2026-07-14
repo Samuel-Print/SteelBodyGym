@@ -1,14 +1,36 @@
-import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Icon } from '../common/Icons';
 import ThemeToggle from '../common/ThemeToggle';
 
 import logo from '../../../public/logoWeb.png';
 
+
 const AdminHeader = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const [usuario, setUsuario] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+
+  useEffect(() => {
+    const data = localStorage.getItem("usuario");
+
+    if (data) {
+      setUsuario(JSON.parse(data));
+    }
+  }, []);
+
+   const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("usuario");
+
+    setIsDropdownOpen(false);
+
+    navigate("/login");
+  };
 
   const navItems = [
     { path: '/promotions', label: 'Promociones', icon: 'tag' },
@@ -83,10 +105,10 @@ const AdminHeader = () => {
                 className="hidden sm:flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-2)] transition cursor-pointer"
               >
                 <div className="w-9 h-9 rounded-full bg-[var(--accent)] text-white flex items-center justify-center font-semibold text-sm">
-                  A
+                  {usuario?.nombre?.charAt(0).toUpperCase() || "U"}
                 </div>
                 <span className="hidden sm:block text-[0.92rem] font-medium text-[var(--text)]">
-                  admin
+                  {usuario?.nombre || "Usuario"}
                 </span>
                 <svg
                   className={`w-4 h-4 text-[var(--muted)] transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`}
@@ -108,9 +130,10 @@ const AdminHeader = () => {
                 <div className="absolute right-0 mt-2 w-48 bg-[var(--card)] border border-[var(--border)] rounded-[var(--radius-sm)] shadow-lg overflow-hidden z-50">
                   <div className="px-4 py-3 border-b border-[var(--border)]">
                     <p className="text-sm font-semibold text-[var(--text)]">Administrador</p>
-                    <p className="text-xs text-[var(--muted)]">admin@steelbody.com</p>
+                    <p className="text-xs text-[var(--muted)]">{usuario?.email}</p>
                   </div>
                   <button
+                    onClick={handleLogout}
                     className="w-full flex items-center gap-3 px-4 py-3 text-sm text-[var(--text)] hover:bg-[var(--surface-2)] transition-colors cursor-pointer"
                   >
                     <svg className="w-4 h-4 stroke-current fill-none stroke-2 stroke-linecap-round stroke-linejoin-round" viewBox="0 0 24 24">

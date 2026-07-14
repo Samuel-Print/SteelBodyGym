@@ -2,13 +2,16 @@ import { getPaginationClass } from './paginationVariants';
 
 const Pagination = ({
   currentPage = 1,
-  totalPages = 10,
+  totalPages = 1,
   onPageChange,
   showItems = true,
-  itemsCount = 4,
-  totalItems = 12,
+  itemsCount = 0,
+  totalItems = 0,
+  label = "registros",
   className = '',
 }) => {
+  if (totalPages <= 1) return null;
+  
   const handlePageClick = (page) => {
     if (page >= 1 && page <= totalPages && page !== currentPage) {
       onPageChange(page);
@@ -33,7 +36,7 @@ const Pagination = ({
 
   return (
     <div className={`flex items-center justify-between text-[13px] text-[var(--muted)] ${className}`}>
-      {showItems && <span>Mostrando {itemsCount} de {totalItems} promociones</span>}
+      {showItems && <span> Mostrando {itemsCount} de {totalItems} {label} </span>}
       <div className="flex gap-1.5 ml-auto">
         <button
           onClick={() => handlePageClick(currentPage - 1)}

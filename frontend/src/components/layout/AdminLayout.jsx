@@ -7,7 +7,7 @@ const AdminLayout = () => {
     <div className="min-h-screen flex flex-col bg-[var(--surface)]">
       <AdminHeader />
 
-    <main className="flex-1 max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 pb-20">
+    <main className="flex-1">
         <Outlet />
     </main>
 

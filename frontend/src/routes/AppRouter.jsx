@@ -1,41 +1,51 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import PublicLayout from '../components/layout/PublicLayout';
+
+import PublicLayout from '@/components/layout/PublicLayout';
+import AdminLayout from '@/components/layout/AdminLayout';
+import ProtectedRoute from "@/components/routing/ProtectedRoute";
+
+
 import Home from '../pages/public/Home';
 
-// Páginas placeholder (las crearemos después)
-import Login from '../features/auth/Login';
+import Login from '../features/auth/pages/Login';
 import Promotions from '../pages/admin/Promotions';
-import Plans from '../pages/admin/plans/Plans';
-import Classes from '../pages/admin/classes/Classes';
-import Branches from '../pages/admin/branches/Branches';
+import Plans from '../features/plans/pages/Plans';
+import Classes from '../features/classes/pages/Classes';
+import Branches from '../features/branches/pages/Branches';
 import Users from '../features/users/pages/Users';
+import RecoverPassword from "@/features/auth/pages/RecoverPassword";
+import ResetPassword from "@/features/auth/pages/ResetPassword";
 
 const AppRouter = () => {
   return (
     <Routes>
-      {/* Rutas Públicas */}
-      <Route path="/" element={<PublicLayout />}>
-        <Route index element={<Home />} />
-        <Route path="terminos" element={<div className="container-custom py-20"><h1 className="section-title text-center">Términos y Condiciones</h1></div>} />
-        <Route path="legal" element={<div className="container-custom py-20"><h1 className="section-title text-center">Documentos Legales</h1></div>} />
-      </Route>
 
-      {/* Login */}
-      <Route path="/login" element={<Login />} />
+        {/* Públicas */}
+        <Route path="/" element={<PublicLayout />}>
+          <Route index element={<Home />} />
+          {/* <Route path="terminos" element={<Terminos />} />
+          <Route path="legal" element={<Legal />} /> */}
+          <Route path="/recuperar-password" element={<RecoverPassword />} />
+          <Route path="/resetear-password" element={<ResetPassword />} />
+        </Route>
 
-      {/* Admin - Promotions */}
-      <Route path="/promotions" element={<Promotions />} />
+        {/* Login */}
+        <Route path="/login" element={<Login />} />
 
-      <Route path="/plans" element={<Plans />} />
+        {/* Protegidas */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<AdminLayout />}>
+            <Route path="/promotions" element={<Promotions />} />
+            <Route path="/plans" element={<Plans />} />
+            <Route path="/classes" element={<Classes />} />
+            <Route path="/branches" element={<Branches />} />
+            <Route path="/users" element={<Users />} />
+          </Route>
+        </Route>
 
-      <Route path="/classes" element={<Classes />} />
+        {/* 404 */}
+        <Route path="*" element={<Navigate to="/" replace />} />
 
-      <Route path="/branches" element={<Branches />} />
-
-      <Route path="/users" element={<Users />} />
-
-      {/* 404 */}
-      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };
