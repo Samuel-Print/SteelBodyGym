@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true
     },
     fecha_caducacion: {
-      type: DataTypes.DATEONLY,
+      type: DataTypes.DATE,
       allowNull: false
     },
     activo: {

@@ -22,7 +22,6 @@ const ClaseRepository = {
 
   findAll: () => {
     return Clase.findAll({
-      where: { activo: true },
       order: [['id_clase', 'ASC']],
       include: [{ model: HorarioClase, as: 'horarios', where: { activo: true }, required: false }],
     });

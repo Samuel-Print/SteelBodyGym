@@ -13,7 +13,7 @@ const ActividadRepository = {
   },
 
   findAll: () => {
-    return Actividad.findAll({ where: { activo: true }, order: [['id_actividad', 'ASC']] });
+    return Actividad.findAll({ order: [['id_actividad', 'ASC']] });
   },
 
   findAllIncludeInactive: () => {
