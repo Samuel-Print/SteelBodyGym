@@ -39,6 +39,11 @@ const PromocionController = {
     const result = await PromocionService.reactivate(req.params.id);
     return sendSuccess(res, null, result.mensaje);
   }),
+
+  getStats: asyncHandler(async (req, res) => {
+    const stats = await PromocionService.getStats();
+    return sendSuccess(res, stats);
+  }),
 };
 
 module.exports = PromocionController;

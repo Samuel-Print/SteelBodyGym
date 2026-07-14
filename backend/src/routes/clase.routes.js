@@ -9,6 +9,7 @@ const validate = require('../middlewares/validation.middleware');
 const claseValidator = require('../validators/clase.validator');
 
 router.get('/', ClaseController.getAll);
+router.get('/stats', authenticate, ClaseController.getStats);
 router.get('/:id', ClaseController.getById);
 router.get('/:id_clase/horarios', HorarioClaseController.getByClase);
 

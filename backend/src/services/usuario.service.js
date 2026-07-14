@@ -130,6 +130,18 @@ const UsuarioService = {
     await UsuarioRepository.updatePassword(usuario.id_usuario, password_hash);
 
     return { mensaje: 'Contraseña actualizada correctamente' };
+  },
+
+  getStats: async () => {
+    const total = await UsuarioRepository.countTotal();
+    const activos = await UsuarioRepository.countActivos();
+    const inactivos = await UsuarioRepository.countInactivos();
+    
+    return {
+      total,
+      activos,
+      inactivos
+    };
   }
 };
 

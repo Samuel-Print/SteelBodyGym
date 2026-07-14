@@ -34,6 +34,11 @@ const PlanController = {
     const result = await PlanService.reactivate(req.params.id);
     return sendSuccess(res, null, result.mensaje);
   }),
+
+  getStats: asyncHandler(async (req, res) => {
+    const stats = await PlanService.getStats();
+    return sendSuccess(res, stats);
+  }),
 };
 
 module.exports = PlanController;

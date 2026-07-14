@@ -51,6 +51,11 @@ const UsuarioController = {
     const { token, nueva_password } = req.body;
     const result = await UsuarioService.resetearPassword(token, nueva_password);
     return sendSuccess(res, null, result.mensaje);
+  }),
+
+  getStats: asyncHandler(async (req, res) => {
+    const stats = await UsuarioService.getStats();
+    return sendSuccess(res, stats);
   })
 
 };

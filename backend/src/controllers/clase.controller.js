@@ -34,6 +34,11 @@ const ClaseController = {
     const result = await ClaseService.reactivate(req.params.id);
     return sendSuccess(res, null, result.mensaje);
   }),
+
+  getStats: asyncHandler(async (req, res) => {
+    const stats = await ClaseService.getStats();
+    return sendSuccess(res, stats);
+  }),
 };
 
 module.exports = ClaseController;

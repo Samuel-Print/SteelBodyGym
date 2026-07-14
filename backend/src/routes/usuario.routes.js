@@ -9,6 +9,7 @@ const usuarioValidator = require('../validators/usuario.validator');
 
 // Rutas de administración de usuarios
 router.get('/', authenticate, UsuarioController.getAll);
+router.get('/stats', authenticate, UsuarioController.getStats);
 router.get('/:id', authenticate, UsuarioController.getById);
 
 router.post(

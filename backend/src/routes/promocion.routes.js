@@ -11,6 +11,8 @@ router.get('/', PromocionController.getAll);
 
 router.get('/vigentes', PromocionController.getVigentes);
 
+router.get('/stats', authenticate, PromocionController.getStats);
+
 router.get('/:id', PromocionController.getById);
 
 router.post('/', authenticate, validate(promocionValidator.create), PromocionController.create);
