@@ -15,6 +15,7 @@ import Branches from '../features/branches/pages/Branches';
 import Users from '../features/users/pages/Users';
 import RecoverPassword from "@/features/auth/pages/RecoverPassword";
 import ResetPassword from "@/features/auth/pages/ResetPassword";
+import Activities from "../features/activities/pages/activities";
 
 const AppRouter = () => {
   return (
@@ -40,6 +41,7 @@ const AppRouter = () => {
             <Route path="/classes" element={<Classes />} />
             <Route path="/branches" element={<Branches />} />
             <Route path="/users" element={<Users />} />
+            <Route path="/activities" element={<Activities />} />
           </Route>
         </Route>
 

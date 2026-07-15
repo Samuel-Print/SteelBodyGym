@@ -1,4 +1,4 @@
-import { getEmptyStateClass } from './emptyStateVariants';
+import { getEmptyStateClass, getEmptyStateBgClass } from './emptyStateVariants';
 
 const EmptyState = ({
   title = 'No hay datos disponibles',
@@ -9,22 +9,27 @@ const EmptyState = ({
   className = '',
 }) => {
   return (
-    <div className={`text-center py-12 ${className}`}>
-<div
-  className={`flex justify-center mb-5 ${getEmptyStateClass(variant)}`}
->
-  {icon || (
-    <svg
-      className="w-16 h-16 stroke-current fill-none stroke-2"
-      viewBox="0 0 24 24"
-    >
-      ...
-    </svg>
-  )}
-</div>
-      <h3 className="text-xl font-head font-bold text-[var(--text)]">{title}</h3>
-      <p className="text-[var(--muted)] mt-2">{description}</p>
-      {action && <div className="mt-4">{action}</div>}
+    <div className={`flex flex-col items-center justify-center text-center py-16 px-6 ${className}`}>
+      <div
+        className={`w-[72px] h-[72px] rounded-full flex items-center justify-center mb-5 ${getEmptyStateBgClass(variant)} ${getEmptyStateClass(variant)}`}
+      >
+        {icon || (
+          <svg
+            className="w-8 h-8 stroke-current fill-none stroke-2"
+            viewBox="0 0 24 24"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 8v4M12 16h.01" />
+          </svg>
+        )}
+      </div>
+      <h3 className="text-[18px] font-head font-bold text-[var(--text)] mb-1.5">
+        {title}
+      </h3>
+      <p className="text-sm text-[var(--muted)] leading-relaxed max-w-[340px]">
+        {description}
+      </p>
+      {action && <div className="mt-5">{action}</div>}
     </div>
   );
 };

@@ -14,7 +14,8 @@ export default function usePlans() {
 
   const loadPlans = async (
     page = 1,
-    limit = pagination.limit
+    limit = pagination.limit,
+    search = ''
   ) => {
     setLoading(true);
 
@@ -22,6 +23,7 @@ export default function usePlans() {
       const response = await planService.getAll({
         page,
         limit,
+        search: search || undefined,
       });
 
       setPlans(response.items);

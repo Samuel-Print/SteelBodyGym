@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 
-import planService from '../api/plans.service';
-import usePlans from '../hooks/usePlans';
+import activityService from '../api/activities.service';
+import useActivities from '../hooks/useActivities';
 import PageHeader from "@/components/ui/PageHeader";
 import { useSearch } from '@/context/SearchContext';
 
-import PlanCreateModal from '../components/CreatePlansModal';
-import PlanEditModal from '../components/EditPlansModal';
-import DisablePlanModal from '../components/DisablePlanModal';
-import EnablePlanModal from '../components/EnablePlanModal';
+import CreateActivityModal from '../../../features/activities/components/CreateActivityModal';
+import EditActivityModal from '../../../features/activities/components/EditActivityModal';
+import DisableActivityModal from '../../../features/activities/components/DisableActivityModal';
+import EnableActivityModal from '../../../features/activities/components/EnableActivityModal';
 
 import {
   Button,
@@ -17,127 +17,102 @@ import {
   EmptyState,
 } from '../../../components/ui';
 
-const Plans = () => {
+const formatHorario = (isoValue) => {
+  if (!isoValue) return '—';
+  const date = new Date(isoValue);
+  if (Number.isNaN(date.getTime())) return '—';
+  return date.toLocaleString('es-CO', {
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+
+const Activities = () => {
   const [showCreate, setShowCreate] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showDisable, setShowDisable] = useState(false);
   const [showEnable, setShowEnable] = useState(false);
 
-  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [selectedActivity, setSelectedActivity] = useState(null);
 
   const { searchTerm } = useSearch();
 
-  const [stats, setStats] = useState({
-    planesActivos: 0,
-    planMasPopular: null,
-    planMasLargo: null,
-  });
-  const [statsLoading, setStatsLoading] = useState(true);
-
   const {
-    plans,
+    activities,
     loading,
     pagination,
-    loadPlans,
-  } = usePlans();
+    loadActivities,
+  } = useActivities();
 
   // Cada vez que cambia el término de búsqueda del header, se vuelve a
   // cargar la página 1 con ese filtro. El debounce evita disparar una
   // petición por cada tecla presionada.
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      loadPlans(1, pagination.limit, searchTerm);
+      loadActivities(1, pagination.limit, searchTerm);
     }, 400);
 
     return () => clearTimeout(timeoutId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm]);
 
-  const loadStats = async () => {
-    try {
-      setStatsLoading(true);
-      const data = await planService.getStats();
-      setStats({
-        planesActivos: data?.planesActivos ?? 0,
-        planMasPopular: data?.planMasPopular ?? null,
-        planMasLargo: data?.planMasLargo ?? null,
-      });
-    } catch (error) {
-      console.error('Error al cargar las estadísticas de planes:', error);
-    } finally {
-      setStatsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadStats();
-  }, []);
-
-  const formatTiempo = (meses) => {
-    const value = Number(meses);
-    if (value >= 1) return `${value} ${value === 1 ? 'mes' : 'meses'}`;
-    const dias = Math.round(value * 30);
-    return `${dias} día${dias === 1 ? '' : 's'}`;
-  };
+  // El backend de actividades no expone un endpoint de estadísticas (a
+  // diferencia de clases), así que solo mostramos lo que sí podemos derivar
+  // de la lista paginada: el total de actividades activas y, entre las
+  // cargadas en la página actual, la próxima que esté agendada.
+  const proximaActividad = activities
+    .filter((a) => a.activo && new Date(a.horario) >= new Date())
+    .sort((a, b) => new Date(a.horario) - new Date(b.horario))[0];
 
   const statsCards = [
     {
-      value: statsLoading ? '—' : stats.planesActivos,
-      label: 'Planes activos',
+      value: loading ? '—' : pagination?.totalItems ?? activities.length,
+      label: 'Actividades activas',
     },
     {
-      value: statsLoading
-        ? '—'
-        : stats.planMasPopular?.nombre ?? 'N/A',
-      label: 'Plan más popular',
-    },
-    {
-      value: statsLoading
-        ? '—'
-        : stats.planMasLargo
-          ? `${stats.planMasLargo.nombre} · ${formatTiempo(stats.planMasLargo.tiempo_meses)}`
-          : 'N/A',
-      label: 'Plan más largo',
+      value: loading ? '—' : proximaActividad ? formatHorario(proximaActividad.horario) : '—',
+      label: 'Próxima actividad',
     },
   ];
 
   const handleCreate = () => {
-    setSelectedPlan(null);
+    setSelectedActivity(null);
     setShowCreate(true);
   };
 
-  const handleSavePlan = async (plan) => {
+  const handleSaveActivity = async (payload) => {
     try {
-      await planService.create(plan);
-      await loadPlans(pagination.currentPage, pagination.limit, searchTerm);
-      await loadStats();
+      await activityService.create(payload);
+      await loadActivities(pagination.currentPage, pagination.limit, searchTerm);
       setShowCreate(false);
     } catch (error) {
-      console.error('Error al crear el plan:', error);
+      console.error('Error al crear la actividad:', error);
     }
   };
 
-  const handleUpdatePlan = async (plan) => {
+  const handleUpdateActivity = async (payload) => {
     try {
-      await planService.update(plan.id_plan, plan);
-      await loadPlans(pagination.currentPage, pagination.limit, searchTerm);
-      await loadStats();
+      const { id_actividad, ...activityData } = payload;
+      await activityService.update(id_actividad, activityData);
+      await loadActivities(pagination.currentPage, pagination.limit, searchTerm);
       setShowEdit(false);
-      setSelectedPlan(null);
+      setSelectedActivity(null);
     } catch (error) {
-      console.error('Error al actualizar el plan:', error);
-      alert('Error al actualizar el plan. Por favor, intenta de nuevo.');
+      console.error('Error al actualizar la actividad:', error);
+      alert('Error al actualizar la actividad. Por favor, intenta de nuevo.');
     }
   };
 
-  const handleEdit = (plan) => {
-    setSelectedPlan(plan);
+  const handleEdit = (activity) => {
+    setSelectedActivity(activity);
     setShowEdit(true);
   };
 
-  const handleToggleActive = (plan) => {
-    setSelectedPlan(plan);
-    if (plan.activo) {
+  const handleToggleActive = (activity) => {
+    setSelectedActivity(activity);
+    if (activity.activo) {
       setShowDisable(true);
     } else {
       setShowEnable(true);
@@ -146,43 +121,31 @@ const Plans = () => {
 
   const confirmToggleActive = async () => {
     try {
-      if (selectedPlan.activo) {
-        await planService.remove(selectedPlan.id_plan); // -> softDelete (activo: false)
+      if (selectedActivity.activo) {
+        await activityService.remove(selectedActivity.id_actividad);
       } else {
-        await planService.reactivate(selectedPlan.id_plan);
+        await activityService.reactivate(selectedActivity.id_actividad);
       }
-      await loadPlans(pagination.currentPage, pagination.limit, searchTerm);
-      await loadStats();
+      await loadActivities(pagination.currentPage, pagination.limit, searchTerm);
       setShowDisable(false);
       setShowEnable(false);
-      setSelectedPlan(null);
+      setSelectedActivity(null);
     } catch (error) {
-      console.error('Error al cambiar el estado del plan:', error);
-      alert('Error al cambiar el estado del plan. Por favor, intenta de nuevo.');
+      console.error('Error al cambiar el estado de la actividad:', error);
+      alert('Error al cambiar el estado de la actividad. Por favor, intenta de nuevo.');
     }
   };
 
   const handlePageChange = (newPage) => {
     if (newPage < 1 || newPage > pagination.totalPages) return;
-    loadPlans(newPage, pagination.limit, searchTerm);
+    loadActivities(newPage, pagination.limit, searchTerm);
   };
-
-  const formatCurrency = (value) =>
-    new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      minimumFractionDigits: 0,
-    }).format(value);
 
   const statsIcons = [
     <svg key="0" className="w-6 h-6 stroke-current fill-none stroke-[2.2] stroke-linecap-round stroke-linejoin-round" viewBox="0 0 24 24">
-      <rect x="3" y="4" width="18" height="16" rx="2" />
-      <path d="M3 10h18" />
+      <path d="m12 2 2.4 7.4H22l-6 4.6 2.3 7.4-6.3-4.6L5.7 21.4 8 14 2 9.4h7.6z" />
     </svg>,
     <svg key="1" className="w-6 h-6 stroke-current fill-none stroke-[2.2] stroke-linecap-round stroke-linejoin-round" viewBox="0 0 24 24">
-      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-    </svg>,
-    <svg key="2" className="w-6 h-6 stroke-current fill-none stroke-[2.2] stroke-linecap-round stroke-linejoin-round" viewBox="0 0 24 24">
       <circle cx="12" cy="12" r="10" />
       <path d="M12 6v6l4 2" />
     </svg>,
@@ -194,8 +157,8 @@ const Plans = () => {
       <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-20">
 
         <PageHeader
-          title="Planes"
-          description="Gestiona los planes de membresía."
+          title="Actividades"
+          description="Programa y administra las actividades del gimnasio."
           action={
             <Button
               onClick={handleCreate}
@@ -205,12 +168,12 @@ const Plans = () => {
                 </svg>
               }
             >
-              Nuevo plan
+              Nueva actividad
             </Button>
           }
         />
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-7">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-7">
           {statsCards.map((stat, index) => (
             <StatsCard
               key={index}
@@ -224,15 +187,14 @@ const Plans = () => {
 
         <div className="bg-[var(--card)] border border-[var(--border)] rounded-[var(--radius)] shadow-sm overflow-hidden">
 
-          {!loading && plans.length === 0 ? (
+          {!loading && activities.length === 0 ? (
             <EmptyState
               variant="primary"
-              title="Aún no hay planes"
-              description="Cuando crees un plan de membresía, aparecerá aquí para que puedas gestionarlo."
+              title="Aún no hay actividades"
+              description="Cuando crees una actividad, aparecerá aquí para que puedas gestionarla."
               icon={
                 <svg className="w-8 h-8 stroke-current fill-none stroke-2" viewBox="0 0 24 24">
-                  <rect x="3" y="4" width="18" height="16" rx="2" />
-                  <path d="M3 10h18" />
+                  <path d="m12 2 2.4 7.4H22l-6 4.6 2.3 7.4-6.3-4.6L5.7 21.4 8 14 2 9.4h7.6z" />
                 </svg>
               }
               action={
@@ -244,7 +206,7 @@ const Plans = () => {
                     </svg>
                   }
                 >
-                  Crear primer plan
+                  Crear primera actividad
                 </Button>
               }
             />
@@ -254,47 +216,43 @@ const Plans = () => {
                 <thead>
                   <tr>
                     <th className="text-left text-[11.5px] uppercase tracking-[0.05em] text-[var(--muted)] font-bold px-5 py-3.5 bg-[var(--surface-2)] border-b border-[var(--border)]">Nombre</th>
+                    <th className="text-left text-[11.5px] uppercase tracking-[0.05em] text-[var(--muted)] font-bold px-5 py-3.5 bg-[var(--surface-2)] border-b border-[var(--border)]">Sede</th>
+                    <th className="text-left text-[11.5px] uppercase tracking-[0.05em] text-[var(--muted)] font-bold px-5 py-3.5 bg-[var(--surface-2)] border-b border-[var(--border)]">Fecha y hora</th>
                     <th className="text-left text-[11.5px] uppercase tracking-[0.05em] text-[var(--muted)] font-bold px-5 py-3.5 bg-[var(--surface-2)] border-b border-[var(--border)]">Descripción</th>
-                    <th className="text-left text-[11.5px] uppercase tracking-[0.05em] text-[var(--muted)] font-bold px-5 py-3.5 bg-[var(--surface-2)] border-b border-[var(--border)]">Tiempo</th>
-                    <th className="text-left text-[11.5px] uppercase tracking-[0.05em] text-[var(--muted)] font-bold px-5 py-3.5 bg-[var(--surface-2)] border-b border-[var(--border)]">Costo</th>
                     <th className="text-right text-[11.5px] uppercase tracking-[0.05em] text-[var(--muted)] font-bold px-5 py-3.5 bg-[var(--surface-2)] border-b border-[var(--border)]">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {plans.map((plan) => (
-                    <tr key={plan.id_plan} className="hover:bg-[var(--surface-2)] transition">
+                  {activities.map((activity) => (
+                    <tr key={activity.id_actividad} className="hover:bg-[var(--surface-2)] transition">
                       <td className="px-5 py-[15px] border-b border-[var(--border)] text-sm">
                         <div className="flex items-center gap-3">
                           <div className="w-[38px] h-[38px] rounded-[10px] bg-[var(--info-bg)] text-[var(--primary-light)] flex items-center justify-center font-bold text-[13px] flex-shrink-0">
-                            {plan.nombre.substring(0, 2).toUpperCase()}
+                            {activity.nombre.substring(0, 2).toUpperCase()}
                           </div>
-                          <div className="font-bold text-[var(--text)]">{plan.nombre}</div>
+                          <div className="font-bold text-[var(--text)]">{activity.nombre}</div>
                         </div>
                       </td>
 
                       <td className="px-5 py-[15px] border-b border-[var(--border)] text-sm text-[var(--muted)]">
-                        {plan.descripcion || '—'}
+                        {activity.sede}
                       </td>
 
                       <td className="px-5 py-[15px] border-b border-[var(--border)] text-sm">
                         <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold bg-[var(--info-bg)] text-[var(--primary-light)]">
                           <span className="w-1.5 h-1.5 rounded-full bg-[var(--primary-light)]" />
-                          {formatTiempo(plan.tiempo_meses)}
+                          {formatHorario(activity.horario)}
                         </span>
                       </td>
 
-                      <td className="px-5 py-[15px] border-b border-[var(--border)] text-sm">
-                        <span className="font-extrabold text-[var(--text)]">
-                          {formatCurrency(plan.costo)}{' '}
-                          <span className="font-normal text-[var(--muted)] text-xs">COP</span>
-                        </span>
+                      <td className="px-5 py-[15px] border-b border-[var(--border)] text-sm text-[var(--muted)]">
+                        {activity.descripcion || '—'}
                       </td>
 
                       <td className="px-5 py-[15px] border-b border-[var(--border)]">
                         <div className="flex justify-end gap-2">
-                          {/* Editar */}
                           <button
-                            onClick={() => handleEdit(plan)}
+                            onClick={() => handleEdit(activity)}
                             className="w-[34px] h-[34px] rounded-[9px] border border-[var(--border)] bg-[var(--card)] flex items-center justify-center text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--accent)] hover:border-[var(--accent)] transition"
                           >
                             <svg className="w-4 h-4 stroke-current fill-none stroke-2" viewBox="0 0 24 24">
@@ -303,21 +261,20 @@ const Plans = () => {
                             </svg>
                           </button>
 
-                          {/* Habilitar / Deshabilitar */}
                           <button
-                            onClick={() => handleToggleActive(plan)}
+                            onClick={() => handleToggleActive(activity)}
                             role="switch"
-                            aria-checked={plan.activo}
-                            title={plan.activo ? 'Deshabilitar plan' : 'Habilitar plan'}
+                            aria-checked={activity.activo}
+                            title={activity.activo ? 'Deshabilitar actividad' : 'Habilitar actividad'}
                             className={`relative inline-flex h-[22px] w-[40px] items-center rounded-full border transition-colors duration-200 flex-shrink-0 ${
-                              plan.activo
+                              activity.activo
                                 ? 'bg-[var(--accent)] border-[var(--accent)]'
                                 : 'bg-[var(--surface-2)] border-[var(--border)]'
                             }`}
                           >
                             <span
                               className={`inline-block h-[16px] w-[16px] transform rounded-full bg-[var(--card)] shadow transition-transform duration-200 ${
-                                plan.activo ? 'translate-x-[19px]' : 'translate-x-[2px]'
+                                activity.activo ? 'translate-x-[19px]' : 'translate-x-[2px]'
                               }`}
                             />
                           </button>
@@ -333,9 +290,9 @@ const Plans = () => {
                   currentPage={pagination.currentPage}
                   totalPages={pagination.totalPages}
                   onPageChange={handlePageChange}
-                  itemsCount={plans.length}
+                  itemsCount={activities.length}
                   totalItems={pagination.totalItems}
-                  label="planes"
+                  label="actividades"
                 />
               </div>
             </>
@@ -343,46 +300,46 @@ const Plans = () => {
         </div>
       </main>
 
-      <PlanCreateModal
+      <CreateActivityModal
         open={showCreate}
         onClose={() => {
           setShowCreate(false);
-          setSelectedPlan(null);
+          setSelectedActivity(null);
         }}
-        onSave={handleSavePlan}
+        onSave={handleSaveActivity}
       />
 
-      <DisablePlanModal
-        open={showDisable}
-        onClose={() => {
-          setShowDisable(false);
-          setSelectedPlan(null);
-        }}
-        plan={selectedPlan}
-        onConfirm={confirmToggleActive}
-      />
-
-      <EnablePlanModal
-        open={showEnable}
-        onClose={() => {
-          setShowEnable(false);
-          setSelectedPlan(null);
-        }}
-        plan={selectedPlan}
-        onConfirm={confirmToggleActive}
-      />
-
-      <PlanEditModal
+      <EditActivityModal
         open={showEdit}
         onClose={() => {
           setShowEdit(false);
-          setSelectedPlan(null);
+          setSelectedActivity(null);
         }}
-        plan={selectedPlan}
-        onSave={handleUpdatePlan}
+        activityData={selectedActivity}
+        onSave={handleUpdateActivity}
+      />
+
+      <DisableActivityModal
+        open={showDisable}
+        onClose={() => {
+          setShowDisable(false);
+          setSelectedActivity(null);
+        }}
+        activityData={selectedActivity}
+        onConfirm={confirmToggleActive}
+      />
+
+      <EnableActivityModal
+        open={showEnable}
+        onClose={() => {
+          setShowEnable(false);
+          setSelectedActivity(null);
+        }}
+        activityData={selectedActivity}
+        onConfirm={confirmToggleActive}
       />
     </div>
   );
 };
 
-export default Plans;
+export default Activities;

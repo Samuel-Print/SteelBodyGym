@@ -14,12 +14,17 @@ export default function useBranches() {
 
   const loadBranches = async (
     page = 1,
-    limit = pagination.limit
+    limit = pagination.limit,
+    search = ''
   ) => {
     setLoading(true);
 
     try {
-      const response = await branchService.getAll({ page, limit });
+      const response = await branchService.getAll({
+        page,
+        limit,
+        search: search || undefined,
+      });
 
       setBranches(response.items);
 

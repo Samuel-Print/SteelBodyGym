@@ -11,6 +11,21 @@ import {
   Textarea,
 } from "../../../components/ui";
 
+const formatCosto = (value) => {
+  const soloNumeros = value.replace(/\D/g, "");
+  if (!soloNumeros) return "";
+  return new Intl.NumberFormat("es-CO").format(Number(soloNumeros));
+};
+
+// Para el valor que llega de la BD (puede venir como "70000.00", 70000, o "70000")
+// Se parsea como número real en vez de limpiar dígitos con regex,
+// para no perder el punto decimal y confundirlo con separador de miles.
+const parseInitialCosto = (value) => {
+  const num = parseFloat(value);
+  if (isNaN(num)) return "";
+  return new Intl.NumberFormat("es-CO").format(Math.round(num));
+};
+
 const PlanEditModal = ({ open, onClose, plan, onSave }) => {
   const [formData, setFormData] = useState({
     nombre: "",
@@ -56,7 +71,7 @@ const PlanEditModal = ({ open, onClose, plan, onSave }) => {
       const data = {
         nombre: plan.nombre || "",
         tiempo_meses: plan.tiempo_meses != null ? String(plan.tiempo_meses) : "",
-        costo: plan.costo != null ? String(plan.costo) : "",
+        costo: plan.costo != null ? parseInitialCosto(plan.costo) : "",
         descripcion: plan.descripcion || "",
         destacado: !!plan.destacado,
         imagen: null,
@@ -84,6 +99,14 @@ const PlanEditModal = ({ open, onClose, plan, onSave }) => {
     setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleCostoChange = (e) => {
+    const formateado = formatCosto(e.target.value);
+    setFormData((prev) => ({
+      ...prev,
+      costo: formateado,
     }));
   };
 
@@ -166,7 +189,8 @@ const PlanEditModal = ({ open, onClose, plan, onSave }) => {
   const validate = () => {
     const isNombreEmpty = !formData.nombre.trim();
     const isTiempoInvalido = !formData.tiempo_meses || Number(formData.tiempo_meses) <= 0;
-    const isCostoInvalido = !formData.costo || Number(formData.costo) <= 0;
+    const costoNumerico = Number(formData.costo.replace(/\D/g, ""));
+    const isCostoInvalido = !costoNumerico || costoNumerico <= 0;
     const emptyCount = [isNombreEmpty, isTiempoInvalido, isCostoInvalido].filter(Boolean).length;
 
     if (emptyCount > 0) {
@@ -210,7 +234,7 @@ const PlanEditModal = ({ open, onClose, plan, onSave }) => {
       id_plan: plan?.id_plan,
       nombre: formData.nombre.trim(),
       tiempo_meses: Number(formData.tiempo_meses),
-      costo: Number(formData.costo),
+      costo: Number(formData.costo.replace(/\D/g, "")),
       descripcion: formData.descripcion.trim(),
       destacado: formData.destacado,
     };
@@ -408,11 +432,11 @@ const PlanEditModal = ({ open, onClose, plan, onSave }) => {
                 Costo (COP)
               </label>
               <Input
-                type="number"
                 name="costo"
+                inputMode="numeric"
                 value={formData.costo}
-                onChange={handleChange}
-                placeholder="Ej: 45000"
+                onChange={handleCostoChange}
+                placeholder="Ej: 45.000"
                 className="w-full bg-[var(--background)] border-[var(--border)] text-[var(--text)] placeholder-[var(--muted)]"
               />
             </div>

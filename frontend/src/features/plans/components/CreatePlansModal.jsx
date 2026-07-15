@@ -21,6 +21,12 @@ const initialPlan = {
   imagen_preview: null,
 };
 
+const formatCosto = (value) => {
+  const soloNumeros = value.replace(/\D/g, "");
+  if (!soloNumeros) return "";
+  return new Intl.NumberFormat("es-CO").format(Number(soloNumeros));
+};
+
 const CreatePlansModal = ({ open, onClose, onSave }) => {
   const [plan, setPlan] = useState(initialPlan);
   const [isDragActive, setIsDragActive] = useState(false);
@@ -30,6 +36,14 @@ const CreatePlansModal = ({ open, onClose, onSave }) => {
     setPlan((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleCostoChange = (e) => {
+    const formateado = formatCosto(e.target.value);
+    setPlan((prev) => ({
+      ...prev,
+      costo: formateado,
     }));
   };
 
@@ -122,7 +136,8 @@ const CreatePlansModal = ({ open, onClose, onSave }) => {
   const validate = () => {
     const isNombreEmpty = !plan.nombre.trim();
     const isTiempoInvalido = !plan.tiempo_meses || Number(plan.tiempo_meses) <= 0;
-    const isCostoInvalido = !plan.costo || Number(plan.costo) <= 0;
+    const costoNumerico = Number(plan.costo.replace(/\D/g, ""));
+    const isCostoInvalido = !costoNumerico || costoNumerico <= 0;
     const emptyCount = [isNombreEmpty, isTiempoInvalido, isCostoInvalido].filter(Boolean).length;
 
     if (emptyCount > 0) {
@@ -157,7 +172,7 @@ const CreatePlansModal = ({ open, onClose, onSave }) => {
     const dataToSend = {
       nombre: plan.nombre.trim(),
       tiempo_meses: Number(plan.tiempo_meses),
-      costo: Number(plan.costo),
+      costo: Number(plan.costo.replace(/\D/g, "")),
       descripcion: plan.descripcion.trim(),
       destacado: plan.destacado,
     };
@@ -355,11 +370,11 @@ const CreatePlansModal = ({ open, onClose, onSave }) => {
                 Costo (COP)
               </label>
               <Input
-                type="number"
                 name="costo"
+                inputMode="numeric"
                 value={plan.costo}
-                onChange={handleChange}
-                placeholder="Ej: 45000"
+                onChange={handleCostoChange}
+                placeholder="Ej: 45.000"
                 className="w-full bg-[var(--background)] border-[var(--border)] text-[var(--text)] placeholder-[var(--muted)]"
               />
             </div>

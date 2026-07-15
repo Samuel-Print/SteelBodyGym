@@ -14,12 +14,17 @@ export default function useClasses() {
 
   const loadClasses = async (
     page = 1,
-    limit = pagination.limit
+    limit = pagination.limit,
+    search = ''
   ) => {
     setLoading(true);
 
     try {
-      const response = await classService.getAll({ page, limit });
+      const response = await classService.getAll({
+        page,
+        limit,
+        search: search || undefined,
+      });
 
       const withHorarios = await Promise.all(
         response.items.map(async (clase) => {

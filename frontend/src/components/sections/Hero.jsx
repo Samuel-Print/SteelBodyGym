@@ -1,12 +1,35 @@
+import { useState, useEffect } from 'react';
 import { Icon } from '../common/Icons';
 
+const ROTATING_PHRASES = [
+  'Entrena duro',
+  'Supera tus límites',
+  'Rompe tu récord',
+  'Transforma tu cuerpo',
+  'Construye disciplina',
+  'Da el siguiente paso',
+];
+
+const PHRASE_INTERVAL = 5200;
+const FADE_MS = 900;
+const EASE = 'cubic-bezier(0.4, 0, 0.2, 1)';
+
 const Hero = () => {
-  const stats = [
-    { value: '2', label: 'Sedes activas' },
-    { value: '+500', label: 'Miembros' },
-    { value: '12', label: 'Clases semanales' },
-    { value: '5am-10pm', label: 'Horario amplio' },
-  ];
+  const [phraseIndex, setPhraseIndex] = useState(0);
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsVisible(false);
+
+      setTimeout(() => {
+        setPhraseIndex((prev) => (prev + 1) % ROTATING_PHRASES.length);
+        setIsVisible(true);
+      }, FADE_MS);
+    }, PHRASE_INTERVAL);
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <section className="relative text-center py-[80px] md:py-[130px] px-0">
@@ -25,9 +48,27 @@ const Hero = () => {
           Forja tu mejor versión
         </span>
 
-        {/* Title */}
-        <h1 className="text-[clamp(2.4rem,6vw,4.4rem)] text-white font-extrabold font-head">
-          Entrena duro en <span className="text-[var(--accent)]">Steel Body Gym</span>
+        {/* Title — dos líneas fijas: la frase rotativa arriba, el texto estático abajo.
+            Así nunca compiten por espacio ni se genera un hueco entre ellas. */}
+        <h1 className="text-[clamp(2.4rem,6vw,4.4rem)] text-white font-extrabold font-head leading-[1.15]">
+          <span
+            className="block overflow-hidden"
+            style={{ minHeight: '1.15em' }}
+          >
+            <span
+              className="inline-block"
+              style={{
+                opacity: isVisible ? 1 : 0,
+                transform: isVisible ? 'translateY(0)' : 'translateY(-10px)',
+                transition: `opacity ${FADE_MS}ms ${EASE}, transform ${FADE_MS}ms ${EASE}`,
+              }}
+            >
+              {ROTATING_PHRASES[phraseIndex]}
+            </span>
+          </span>
+          <span className="block">
+            en <span className="text-[var(--accent)]">Steel Body Gym</span>
+          </span>
         </h1>
 
         {/* Description */}

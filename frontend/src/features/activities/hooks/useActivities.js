@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import userService from '../api/user.service';
+import activityService from '../api/activities.service';
 
-export default function useUsers() {
-  const [users, setUsers] = useState([]);
+export default function useActivities() {
+  const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [pagination, setPagination] = useState({
@@ -12,17 +12,21 @@ export default function useUsers() {
     limit: 10,
   });
 
-  const loadUsers = async (page = 1, limit = pagination.limit, search = '') => {
+  const loadActivities = async (
+    page = 1,
+    limit = pagination.limit,
+    search = ''
+  ) => {
     setLoading(true);
 
     try {
-      const response = await userService.getAll({
+      const response = await activityService.getAll({
         page,
         limit,
         search: search || undefined,
       });
 
-      setUsers(response.items);
+      setActivities(response.items);
 
       setPagination({
         currentPage: response.currentPage,
@@ -30,23 +34,22 @@ export default function useUsers() {
         totalItems: response.totalItems,
         limit,
       });
-
     } catch (error) {
-      console.error(error);
-      setUsers([]);
+      console.error('Error al cargar actividades:', error);
+      setActivities([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadUsers();
+    loadActivities();
   }, []);
 
   return {
-    users,
+    activities,
     loading,
     pagination,
-    loadUsers,
+    loadActivities,
   };
 }

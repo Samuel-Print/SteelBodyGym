@@ -1,6 +1,7 @@
 import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import AppRouter from './routes/AppRouter';
+import { SearchProvider } from '@/context/SearchContext';
 import './index.css';
 
 import api from "@/api/axios";
@@ -22,7 +23,9 @@ const toastStyle = {
 function App() {
   return (
     <BrowserRouter>
-      <AppRouter />
+      <SearchProvider>
+        <AppRouter />
+      </SearchProvider>
       <Toaster 
         position="top-right"
         toastOptions={{

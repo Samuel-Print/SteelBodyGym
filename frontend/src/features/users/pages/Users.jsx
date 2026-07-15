@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 import userService from "../api/user.service";
 import PageHeader from "@/components/ui/PageHeader";
+import { useSearch } from '@/context/SearchContext';
 
 import CreateUserModal from '../components/CreateUserModal';
 import EditUserModal from '../components/EditUserModal';
@@ -25,6 +26,8 @@ const Users = () => {
 
   const [selectedUser, setSelectedUser] = useState(null);
 
+  const { searchTerm } = useSearch();
+
   const [stats, setStats] = useState({
     total: 0,
     activos: 0,
@@ -38,6 +41,33 @@ const Users = () => {
     pagination,
     loadUsers,
   } = useUsers();
+
+  // Cada vez que cambia el término de búsqueda del header, se vuelve a
+  // cargar la página 1 con ese filtro. El debounce evita disparar una
+  // petición por cada tecla presionada.
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      loadUsers(1, pagination.limit, searchTerm);
+    }, 400);
+
+    return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm]);
+
+  // Usuario actualmente logueado (para excluirlo de la tabla)
+  const currentUserId = useMemo(() => {
+    try {
+      const stored = localStorage.getItem('usuario');
+      return stored ? JSON.parse(stored)?.id : null;
+    } catch (error) {
+      return null;
+    }
+  }, []);
+
+  const visibleUsers = useMemo(
+    () => users.filter((user) => user.id_usuario !== currentUserId),
+    [users, currentUserId]
+  );
 
   const loadStats = async () => {
     try {
@@ -178,19 +208,31 @@ const Users = () => {
         <div className="bg-[var(--card)] border border-[var(--border)] rounded-[var(--radius)] shadow-sm overflow-hidden">
           {loading ? (
             <div className="p-12 text-center">Cargando...</div>
-          ) : users.length === 0 ? (
+          ) : visibleUsers.length === 0 ? (
             <EmptyState
+              variant="primary"
+              title="Aún no hay usuarios"
+              description="Cuando registres un usuario, aparecerá aquí para que puedas gestionarlo."
               icon={
-                <svg className="w-16 h-16 stroke-current fill-none stroke-[2.2]" viewBox="0 0 24 24">
+                <svg className="w-8 h-8 stroke-current fill-none stroke-2" viewBox="0 0 24 24">
                   <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
                   <circle cx="9" cy="7" r="4" />
                   <path d="M20 8v6" />
                   <path d="M17 11h6" />
                 </svg>
               }
-              title="No hay usuarios registrados"
-              description="Aún no se ha creado ningún usuario."
-              action={<Button onClick={handleCreate}>Nuevo usuario</Button>}
+              action={
+                <Button
+                  onClick={handleCreate}
+                  icon={
+                    <svg className="w-4 h-4 stroke-current fill-none stroke-2 stroke-linecap-round stroke-linejoin-round" viewBox="0 0 24 24">
+                      <path d="M12 5v14M5 12h14" />
+                    </svg>
+                  }
+                >
+                  Crear primer usuario
+                </Button>
+              }
             />
           ) : (
             <>
@@ -204,7 +246,7 @@ const Users = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map((user) => (
+                  {visibleUsers.map((user) => (
                     <tr key={user.id_usuario} className="hover:bg-[var(--surface-2)] transition">
                       <td className="px-5 py-[15px] border-b border-[var(--border)] text-sm">
                         <div className="flex items-center gap-3">
@@ -266,9 +308,9 @@ const Users = () => {
                   currentPage={pagination.currentPage}
                   totalPages={pagination.totalPages}
                   totalItems={pagination.totalItems}
-                  itemsCount={users.length}
+                  itemsCount={visibleUsers.length}
                   label="usuarios"
-                  onPageChange={(page) => loadUsers(page)}
+                  onPageChange={(page) => loadUsers(page, pagination.limit, searchTerm)}
                 />
               </div>
             </>

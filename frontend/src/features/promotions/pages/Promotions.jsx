@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import promotionService from '../api/promotion.service';
 import usePromotions from '../hooks/usePromotions';
 import PageHeader from "@/components/ui/PageHeader";
+import { useSearch } from '@/context/SearchContext';
 
 import PromotionCreateModal from '../../../features/promotions/components/CreatePromotionModal';
 import PromotionEditModal from '../../../features/promotions/components/EditPromotionModal';
@@ -13,6 +14,7 @@ import {
   Button,
   StatsCard,
   Pagination,
+  EmptyState,
 } from '../../../components/ui';
 
 const Promotions = () => {
@@ -22,8 +24,8 @@ const Promotions = () => {
     const [showEnable, setShowEnable] = useState(false);
 
     const [selectedPromo, setSelectedPromo] = useState(null);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [filterStatus, setFilterStatus] = useState('');
+
+    const { searchTerm } = useSearch();
 
     const [stats, setStats] = useState({
         total: 0,
@@ -38,6 +40,18 @@ const Promotions = () => {
         pagination,
         loadPromotions,
     } = usePromotions();
+
+    // Cada vez que cambia el término de búsqueda del header, se vuelve a
+    // cargar la página 1 con ese filtro. El debounce evita disparar una
+    // petición por cada tecla presionada.
+    useEffect(() => {
+      const timeoutId = setTimeout(() => {
+        loadPromotions(1, pagination.limit, searchTerm);
+      }, 400);
+
+      return () => clearTimeout(timeoutId);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchTerm]);
 
     const loadStats = async () => {
         try {
@@ -228,123 +242,151 @@ const Promotions = () => {
 
         <div className="bg-[var(--card)] border border-[var(--border)] rounded-[var(--radius)] shadow-sm overflow-hidden">
 
-          <table className="w-full border-collapse">
+          {!loading && promotions.length === 0 ? (
+          <EmptyState
+            variant="primary"
+            title="Aún no hay promociones"
+            description="Cuando crees una promoción, aparecerá aquí para que puedas gestionarla."
+            icon={
+              <svg className="w-8 h-8 stroke-current fill-none stroke-2" viewBox="0 0 24 24">
+                <path d="m15 5 4 4M13.5 3.5 21 11l-9 9-7.5-.5L4 12z" />
+                <circle cx="9.5" cy="8.5" r="0.5" fill="currentColor" stroke="none" />
+              </svg>
+            }
+            action={
+              <Button
+                onClick={handleCreate}
+                icon={
+                  <svg className="w-4 h-4 stroke-current fill-none stroke-2 stroke-linecap-round stroke-linejoin-round" viewBox="0 0 24 24">
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                }
+              >
+                Crear primera promoción
+              </Button>
+            }
+          />
+          ) : (
+            <>
+              <table className="w-full border-collapse">
 
-            <thead>
+                <thead>
 
-              <tr>
+                  <tr>
 
-                <th className="text-left text-[11.5px] uppercase tracking-[0.05em] text-[var(--muted)] font-bold px-5 py-3.5 bg-[var(--surface-2)] border-b border-[var(--border)]">
-                  Nombre del plan
-                </th>
+                    <th className="text-left text-[11.5px] uppercase tracking-[0.05em] text-[var(--muted)] font-bold px-5 py-3.5 bg-[var(--surface-2)] border-b border-[var(--border)]">
+                      Nombre del plan
+                    </th>
 
-                <th className="text-left text-[11.5px] uppercase tracking-[0.05em] text-[var(--muted)] font-bold px-5 py-3.5 bg-[var(--surface-2)] border-b border-[var(--border)]">
-                  Descripción
-                </th>
+                    <th className="text-left text-[11.5px] uppercase tracking-[0.05em] text-[var(--muted)] font-bold px-5 py-3.5 bg-[var(--surface-2)] border-b border-[var(--border)]">
+                      Descripción
+                    </th>
 
-                <th className="text-left text-[11.5px] uppercase tracking-[0.05em] text-[var(--muted)] font-bold px-5 py-3.5 bg-[var(--surface-2)] border-b border-[var(--border)]">
-                  Fecha de caducación
-                </th>
+                    <th className="text-left text-[11.5px] uppercase tracking-[0.05em] text-[var(--muted)] font-bold px-5 py-3.5 bg-[var(--surface-2)] border-b border-[var(--border)]">
+                      Fecha de caducación
+                    </th>
 
-                <th className="text-right text-[11.5px] uppercase tracking-[0.05em] text-[var(--muted)] font-bold px-5 py-3.5 bg-[var(--surface-2)] border-b border-[var(--border)]">
-                  Acciones
-                </th>
+                    <th className="text-right text-[11.5px] uppercase tracking-[0.05em] text-[var(--muted)] font-bold px-5 py-3.5 bg-[var(--surface-2)] border-b border-[var(--border)]">
+                      Acciones
+                    </th>
 
-              </tr>
+                  </tr>
 
-            </thead>
+                </thead>
 
-            <tbody>
-              {promotions.map((promo) => (
-                <tr
-                  key={promo.id_promocion}
-                  className="hover:bg-[var(--surface-2)] transition"
-                >
-                  <td className="px-5 py-[15px] border-b border-[var(--border)] text-sm">
-                    <div className="flex items-center gap-3">
-                      <div className="w-[38px] h-[38px] rounded-[10px] bg-[var(--info-bg)] text-[var(--primary-light)] flex items-center justify-center font-bold text-[13px] flex-shrink-0">
-                        {promo.nombre.substring(0, 2).toUpperCase()}
-                      </div>
+                <tbody>
+                  {promotions.map((promo) => (
+                    <tr
+                      key={promo.id_promocion}
+                      className="hover:bg-[var(--surface-2)] transition"
+                    >
+                      <td className="px-5 py-[15px] border-b border-[var(--border)] text-sm">
+                        <div className="flex items-center gap-3">
+                          <div className="w-[38px] h-[38px] rounded-[10px] bg-[var(--info-bg)] text-[var(--primary-light)] flex items-center justify-center font-bold text-[13px] flex-shrink-0">
+                            {promo.nombre.substring(0, 2).toUpperCase()}
+                          </div>
 
-                      <div>
-                        <div className="font-bold text-[var(--text)]">
-                          {promo.nombre}
+                          <div>
+                            <div className="font-bold text-[var(--text)]">
+                              {promo.nombre}
+                            </div>
+
+                          </div>
                         </div>
+                      </td>
 
-                      </div>
-                    </div>
-                  </td>
+                      <td className="px-5 py-[15px] border-b border-[var(--border)] text-sm text-[var(--muted)]">
+                        {promo.descripcion}
+                      </td>
 
-                  <td className="px-5 py-[15px] border-b border-[var(--border)] text-sm text-[var(--muted)]">
-                    {promo.descripcion}
-                  </td>
+                      <td className="px-5 py-[15px] border-b border-[var(--border)] text-sm">
 
-                  <td className="px-5 py-[15px] border-b border-[var(--border)] text-sm">
+                        <div className="text-[15px] text-[var(--muted)] mt-1">
+                          {new Date(promo.fecha_caducacion).toLocaleDateString('es-CO', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric',
+                            timeZone: 'UTC',
+                          })}
+                        </div>
+                      </td>
 
-                    <div className="text-[15px] text-[var(--muted)] mt-1">
-                      {new Date(promo.fecha_caducacion).toLocaleDateString('es-CO', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                        timeZone: 'UTC',
-                      })}
-                    </div>
-                  </td>
+                      <td className="px-5 py-[15px] border-b border-[var(--border)]">
+                        <div className="flex justify-end gap-2">
 
-                  <td className="px-5 py-[15px] border-b border-[var(--border)]">
-                    <div className="flex justify-end gap-2">
+                          {/* Editar */}
+                          <button
+                            onClick={() => handleEdit(promo)}
+                            className="w-[34px] h-[34px] rounded-[9px] border border-[var(--border)] bg-[var(--card)] flex items-center justify-center text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--accent)] hover:border-[var(--accent)] transition"
+                          >
+                            <svg
+                              className="w-4 h-4 stroke-current fill-none stroke-2"
+                              viewBox="0 0 24 24"
+                            >
+                              <path d="M12 20h9" />
+                              <path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4 12.5-12.5Z" />
+                            </svg>
+                          </button>
 
-                      {/* Editar */}
-                      <button
-                        onClick={() => handleEdit(promo)}
-                        className="w-[34px] h-[34px] rounded-[9px] border border-[var(--border)] bg-[var(--card)] flex items-center justify-center text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--accent)] hover:border-[var(--accent)] transition"
-                      >
-                        <svg
-                          className="w-4 h-4 stroke-current fill-none stroke-2"
-                          viewBox="0 0 24 24"
-                        >
-                          <path d="M12 20h9" />
-                          <path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4 12.5-12.5Z" />
-                        </svg>
-                      </button>
+                          {/* Habilitar / Deshabilitar */}
+                          <button
+                            onClick={() => handleToggleActive(promo)}
+                            role="switch"
+                            aria-checked={promo.activo}
+                            title={promo.activo ? 'Deshabilitar promoción' : 'Habilitar promoción'}
+                            className={`relative inline-flex h-[22px] w-[40px] items-center rounded-full border transition-colors duration-200 flex-shrink-0 ${
+                              promo.activo
+                                ? 'bg-[var(--accent)] border-[var(--accent)]'
+                                : 'bg-[var(--surface-2)] border-[var(--border)]'
+                            }`}
+                          >
+                            <span
+                              className={`inline-block h-[16px] w-[16px] transform rounded-full bg-[var(--card)] shadow transition-transform duration-200 ${
+                                promo.activo ? 'translate-x-[19px]' : 'translate-x-[2px]'
+                              }`}
+                            />
+                          </button>
 
-                      {/* Habilitar / Deshabilitar */}
-                      <button
-                        onClick={() => handleToggleActive(promo)}
-                        role="switch"
-                        aria-checked={promo.activo}
-                        title={promo.activo ? 'Deshabilitar promoción' : 'Habilitar promoción'}
-                        className={`relative inline-flex h-[22px] w-[40px] items-center rounded-full border transition-colors duration-200 flex-shrink-0 ${
-                          promo.activo
-                            ? 'bg-[var(--accent)] border-[var(--accent)]'
-                            : 'bg-[var(--surface-2)] border-[var(--border)]'
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-[16px] w-[16px] transform rounded-full bg-[var(--card)] shadow transition-transform duration-200 ${
-                            promo.activo ? 'translate-x-[19px]' : 'translate-x-[2px]'
-                          }`}
-                        />
-                      </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
 
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+              </table>
 
-          </table>
-
-          <div className="px-5 py-3.5 border-t border-[var(--border)]">
-            <Pagination
-              currentPage={pagination.currentPage}
-              totalPages={pagination.totalPages}
-              onPageChange={handlePageChange}
-              itemsCount={promotions.length}
-              totalItems={pagination.totalItems}
-              label="promociones"
-            />
-          </div>
+              <div className="px-5 py-3.5 border-t border-[var(--border)]">
+                <Pagination
+                  currentPage={pagination.currentPage}
+                  totalPages={pagination.totalPages}
+                  onPageChange={handlePageChange}
+                  itemsCount={promotions.length}
+                  totalItems={pagination.totalItems}
+                  label="promociones"
+                />
+              </div>
+            </>
+          )}
         </div>
       </main>
 

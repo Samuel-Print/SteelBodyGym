@@ -14,7 +14,8 @@ export default function usePromotions() {
 
   const loadPromotions = async (
     page = 1,
-    limit = pagination.limit
+    limit = pagination.limit,
+    search = ''
   ) => {
     setLoading(true);
 
@@ -22,6 +23,7 @@ export default function usePromotions() {
       const response = await promotionService.getAll({
         page,
         limit,
+        search: search || undefined,
       });
 
       setPromotions(response.items);
