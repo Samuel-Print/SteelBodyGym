@@ -70,9 +70,43 @@ const EditPromotionModal = ({
     if (promotion) {
       const nombreInicial = promotion.nombre || "";
       const descripcionInicial = promotion.descripcion || "";
-      const fechaInicial = promotion.fecha_caducacion
-        ? promotion.fecha_caducacion.split('T')[0]
-        : "";
+
+      // promotion.fecha_caducacion llega en UTC desde el backend (ej:
+      // "2026-07-20T01:00:00.000Z"). Como los <input type="date"> y los
+      // <select> de hora deben mostrar la hora LOCAL del usuario (no la
+      // UTC cruda), convertimos primero a un Date real y leemos sus
+      // componentes locales, en vez de trocear el string directamente
+      // (que fue justo el bug original: trocear el string asumía que ya
+      // estaba en hora local).
+      const fechaUTC = promotion.fecha_caducacion
+        ? new Date(promotion.fecha_caducacion)
+        : null;
+
+      let fechaInicial = "";
+      let horaInicial = "12";
+      let minutoInicial = "00";
+      let periodoInicial = "AM";
+
+      if (fechaUTC && !isNaN(fechaUTC.getTime())) {
+        const yyyy = fechaUTC.getFullYear();
+        const mm = String(fechaUTC.getMonth() + 1).padStart(2, "0");
+        const dd = String(fechaUTC.getDate()).padStart(2, "0");
+        fechaInicial = `${yyyy}-${mm}-${dd}`;
+
+        let h = fechaUTC.getHours();
+        const m = String(fechaUTC.getMinutes()).padStart(2, "0");
+        let periodoValue = "AM";
+
+        if (h >= 12) {
+          periodoValue = "PM";
+          if (h > 12) h -= 12;
+        }
+        if (h === 0) h = 12;
+
+        horaInicial = String(h).padStart(2, "0");
+        minutoInicial = m;
+        periodoInicial = periodoValue;
+      }
 
       // Actualizar formData
       setFormData({
@@ -83,35 +117,9 @@ const EditPromotionModal = ({
         imagen_preview: promotion.imagen || null,
       });
 
-      // Extraer y actualizar hora
-      let horaInicial = "12";
-      let minutoInicial = "00";
-      let periodoInicial = "AM";
-
-      if (promotion.fecha_caducacion) {
-        const time = promotion.fecha_caducacion.split('T')[1]?.split(':') || [];
-        let h = parseInt(time[0] || 0);
-        const m = time[1] || '00';
-        let periodoValue = 'AM';
-        
-        if (h >= 12) {
-          periodoValue = 'PM';
-          if (h > 12) h -= 12;
-        }
-        if (h === 0) h = 12;
-        
-        horaInicial = String(h).padStart(2, '0');
-        minutoInicial = m;
-        periodoInicial = periodoValue;
-
-        setHora(horaInicial);
-        setMinuto(minutoInicial);
-        setPeriodo(periodoInicial);
-      } else {
-        setHora("12");
-        setMinuto("00");
-        setPeriodo("AM");
-      }
+      setHora(horaInicial);
+      setMinuto(minutoInicial);
+      setPeriodo(periodoInicial);
 
       // Guardamos el snapshot original para poder comparar más adelante
       setInitialData({
@@ -151,6 +159,16 @@ const EditPromotionModal = ({
     }
 
     return `${String(h).padStart(2, "0")}:${minuto}:00`;
+  };
+
+  // Arma un objeto Date real a partir de la fecha (input date) + hora
+  // seleccionadas (ambas en hora LOCAL del usuario). A partir de aquí
+  // siempre se debe usar .toISOString() para mandar la fecha al
+  // backend, nunca el string local a secas, porque ese string no lleva
+  // información de zona horaria y el backend no tiene forma de saber a
+  // qué huso horario corresponde.
+  const buildFechaCaducacion = () => {
+    return new Date(`${formData.fecha_caducacion}T${convertTo24h()}`);
   };
 
   // Manejar cambios en los inputs
@@ -279,9 +297,7 @@ const EditPromotionModal = ({
       return false;
     }
 
-    const fechaCompleta = new Date(
-      `${formData.fecha_caducacion}T${convertTo24h()}`
-    );
+    const fechaCompleta = buildFechaCaducacion();
     if (fechaCompleta.getTime() <= Date.now()) {
       toast("La fecha y hora de caducidad deben ser futuras.", {
         icon: InfoIcon,
@@ -309,11 +325,16 @@ const EditPromotionModal = ({
 
     // TODO: cuando el backend tenga Multer listo, volver a incluir la imagen
     // y cambiar promotionService.update para enviar FormData en vez de JSON.
+    //
+    // FIX zona horaria: antes se mandaba el string local a secas
+    // ("2026-07-19T20:00:00"), sin indicar la zona horaria. Con
+    // .toISOString() convertimos explícitamente a UTC antes de
+    // enviarlo (ej: "2026-07-20T01:00:00.000Z"), eliminando la ambigüedad.
     const dataToSend = {
       id_promocion: promotion?.id_promocion, // Mantener el ID de la promoción
       nombre: formData.nombre,
       descripcion: formData.descripcion,
-      fecha_caducacion: `${formData.fecha_caducacion}T${convertTo24h()}`,
+      fecha_caducacion: buildFechaCaducacion().toISOString(),
     };
 
     try {

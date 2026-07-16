@@ -110,6 +110,18 @@ const CreatePromotionModal = ({ open, onClose, onSave }) => {
     return `${String(h).padStart(2, "0")}:${minuto}:00`;
   };
 
+  // Arma un objeto Date real a partir de la fecha (input date) + hora
+  // seleccionadas. Como el navegador interpreta el string
+  // "YYYY-MM-DDTHH:mm:ss" (sin zona) como hora LOCAL del usuario, este
+  // Date ya representa el instante correcto. A partir de aquí siempre
+  // se debe usar .toISOString() para mandar la fecha al backend, nunca
+  // el string local a secas, porque ese string no lleva información de
+  // zona horaria y el backend no tiene forma de saber a qué huso
+  // horario corresponde.
+  const buildFechaCaducacion = () => {
+    return new Date(`${promotion.fecha_caducacion}T${convertTo24h()}`);
+  };
+
   const handleClose = () => {
     setPromotion(initialPromotion);
     setHora("12");
@@ -176,9 +188,7 @@ const CreatePromotionModal = ({ open, onClose, onSave }) => {
       return false;
     }
 
-    const fechaCompleta = new Date(
-      `${promotion.fecha_caducacion}T${convertTo24h()}`
-    );
+    const fechaCompleta = buildFechaCaducacion();
     if (fechaCompleta.getTime() <= Date.now()) {
       toast("La fecha y hora de caducidad deben ser futuras.", {
         icon: InfoIcon,
@@ -196,10 +206,17 @@ const CreatePromotionModal = ({ open, onClose, onSave }) => {
 
     // TODO: cuando el backend tenga Multer listo, volver a incluir la imagen
     // y cambiar promotionService.create para enviar FormData en vez de JSON.
+    //
+    // FIX zona horaria: antes se mandaba el string local a secas
+    // ("2026-07-19T20:00:00"), sin indicar la zona horaria. El backend
+    // no tiene forma de saber si esas 20:00 son en Bogotá, UTC, etc.,
+    // y terminaba aplicando un offset incorrecto (o doble) al guardar.
+    // Con .toISOString() convertimos explícitamente a UTC antes de
+    // enviarlo (ej: "2026-07-20T01:00:00.000Z"), eliminando la ambigüedad.
     const dataToSend = {
       nombre: promotion.nombre,
       descripcion: promotion.descripcion,
-      fecha_caducacion: `${promotion.fecha_caducacion}T${convertTo24h()}`,
+      fecha_caducacion: buildFechaCaducacion().toISOString(),
     };
 
     try {
