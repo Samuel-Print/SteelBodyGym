@@ -10,7 +10,6 @@ const horarioclaseRoutes = require('./routes/horarioclase.routes');
 const planRoutes = require('./routes/plan.routes');
 const promocionRoutes = require('./routes/promocion.routes');
 const uploadRoutes = require('./routes/upload.routes');
-const actividadRoutes = require('./routes/actividad.routes');
 
 const app = express();
 
@@ -46,6 +45,5 @@ app.use('/api/planes', planRoutes);
 app.use('/api/promociones', promocionRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/uploads', uploadRoutes);
-app.use('/api/actividades', actividadRoutes);
 
 module.exports = app;
