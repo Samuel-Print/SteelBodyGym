@@ -6,14 +6,29 @@ const authenticate = require('../middlewares/auth.middleware');
 const validate = require('../middlewares/validation.middleware');
 const PlanController = require('../controllers/plan.controller');
 const planValidator = require('../validators/plan.validator');
+const { upload, handleUpload, injectImageUrl } = require('../middlewares/upload.middleware');
 
 router.get('/', PlanController.getAll);
 router.get('/stats', authenticate, PlanController.getStats);
 router.get('/:id', PlanController.getById);
 
-router.post('/', authenticate, validate(planValidator.create), PlanController.create);
+router.post(
+  '/',
+  authenticate,
+  handleUpload(upload.single('imagen')),
+  injectImageUrl,
+  validate(planValidator.create),
+  PlanController.create
+);
 
-router.put('/:id', authenticate, validate(planValidator.update), PlanController.update);
+router.put(
+  '/:id',
+  authenticate,
+  handleUpload(upload.single('imagen')),
+  injectImageUrl,
+  validate(planValidator.update),
+  PlanController.update
+);
 
 router.patch('/:id/reactivate', authenticate, PlanController.reactivate);
 

@@ -7,6 +7,7 @@ const HorarioClaseController = require('../controllers/horarioclase.controller')
 const authenticate = require('../middlewares/auth.middleware');
 const validate = require('../middlewares/validation.middleware');
 const claseValidator = require('../validators/clase.validator');
+const { upload, handleUpload, injectImageUrl } = require('../middlewares/upload.middleware');
 
 router.get('/', ClaseController.getAll);
 router.get('/stats', authenticate, ClaseController.getStats);
@@ -17,12 +18,16 @@ router.get('/:id_clase/horarios', HorarioClaseController.getByClase);
 router.post(
   '/',
   authenticate,
+  handleUpload(upload.single('imagen')),
+  injectImageUrl,
   validate(claseValidator.create),
   ClaseController.create
 );
 router.put(
   '/:id',
   authenticate,
+  handleUpload(upload.single('imagen')),
+  injectImageUrl,
   validate(claseValidator.update),
   ClaseController.update
 );
