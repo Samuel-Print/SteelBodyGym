@@ -9,4 +9,7 @@ router.post('/imagen', handleUpload(upload.single('imagen')), uploadController.u
 // Ruta para subir múltiples imágenes (hasta 5, campo form-data: 'imagenes')
 router.post('/imagenes', handleUpload(upload.array('imagenes', 5)), uploadController.uploadMultipleImages);
 
+//Servir las imágenes
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 module.exports = router;
